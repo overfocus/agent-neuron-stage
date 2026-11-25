@@ -13,7 +13,7 @@
 import { POSES } from 'maxcot';
 import { skinsByName } from 'maxcot/skins';
 import type { ScoreEvent } from 'maxcot/score';
-import { castOf, type CastOptions, type StageActor } from './cast.ts';
+import { castOf, FACING, type CastOptions, type StageActor } from './cast.ts';
 import { eventType, payloadLine, payloadValue, type Trace } from './trace.ts';
 import type { Show } from './show.ts';
 
@@ -28,6 +28,8 @@ export interface CompileOptions extends CastOptions {
   leadInBeats?: number;
   /** Beats the end card holds after the last moment. Default 6. */
   tailBeats?: number;
+  /** How far a character turns toward the one it addresses, in radians. Default 0.38 (the rig's own three-quarter turn). */
+  facing?: number;
 }
 
 export type Framing = 'wide' | 'full' | 'medium' | 'close';
@@ -84,19 +86,52 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
   const absBeat = ([bar, beat]: [number, number]): number => (bar - 1) * beatsPerBar + (beat - 1);
   const kindOf = (id: string): string => byId.get(id)?.kind ?? 'run';
 
+  // ── facing ──────────────────────────────────────────────────────────────
+  // A figure's orientation is view.yaw (a design dial) plus twist: yaw > 0
+  // faces screen-right (docs of spike 001). Every actor is born turned the same
+  // way, so a cast only faces itself if the compiler turns each one toward the
+  // people it can address.
+  const facing = Math.max(-0.9, Math.min(0.9, o.facing ?? FACING));
+  const faced = new Map<string, number>();
+  const meanX = (xs: number[]): number | undefined => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : undefined);
+  /** Turn `id` toward `targetX`, once, and only when that is a different way round. */
+  const faceAt = (id: string, targetX: number | undefined, when: [number, number]): void => {
+    const actor = byId.get(id);
+    if (!actor || targetX == null) return;
+    const dir = Math.sign(targetX - actor.x);
+    if (!dir) return;
+    const yaw = Math.round(dir * facing * 1000) / 1000;
+    if (faced.get(id) === yaw) return;
+    faced.set(id, yaw);
+    const event: ScoreEvent = { at: when, set: 'view.yaw', to: yaw, on: id };
+    events.push(event);
+  };
+  /** Where an actor should face by default: the middle of the people it can reach. */
+  const homeOf = (id: string): number | undefined => {
+    const reach = trace.links.filter((l) => l.from === id && byId.has(l.to)).map((l) => byId.get(l.to)!.x);
+    if (reach.length) return meanX(reach);
+    const others = actors.filter((a) => a.id !== id).map((a) => a.x);
+    return meanX(others);
+  };
+
   // The cast walks on during the bar before the run, a quarter beat apart.
   actors.forEach((a, i) => {
     const beat = Math.min(beatsPerBar, 1 + i * 0.25);
     push([1, beat], 'enter', { id: a.id, who: a.who, x: round(a.x), z: round(a.z) });
     push([1, beat], 'manner', { weight: round(a.weight), idle: a.idle }, a.id);
+    faceAt(a.id, homeOf(a.id), [1, beat]);
   });
 
   const speakerOf = new Map<string, string>();
   // An answer and the signal that forwards it land on one beat; the signal carries
-  // the look, so the answer need not say it twice.
+  // the look (and is who the character is really addressing), so read it there.
   const forwarded = new Set<string>();
+  const forwardTo = new Map<string, string>();
   for (const e of trace.events) {
-    if (eventType(e) === 'signal' && e.from) forwarded.add(`${e.t}|${e.from}`);
+    if (eventType(e) !== 'signal' || !e.from) continue;
+    const key = `${e.t}|${e.from}`;
+    forwarded.add(key);
+    if (!forwardTo.has(key) && e.to[0]) forwardTo.set(key, e.to[0]);
   }
   const lastShot = { at: -99 };
   const isCharacter = (id: string): boolean => {
@@ -157,6 +192,11 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
         }
         const line = cue.say ?? payloadLine(e.payload);
         if (line) push(when, 'say', clip(line), from);
+        // turn to the one this line is for: the forward's target reads better than
+        // the router's reply, which a composed neuron's caller can be
+        const addressee =
+          forwardTo.get(`${e.t}|${from}`) ?? spokeTo ?? e.to.find((id) => byId.has(id) && id !== from);
+        if (addressee && addressee !== from) faceAt(from, byId.get(addressee)?.x, when);
         if (cue.skin || cue.palette) {
           const styleEvent: ScoreEvent = { at: when, style: cue.skin ?? skin };
           if (cue.palette) styleEvent.palette = cue.palette;

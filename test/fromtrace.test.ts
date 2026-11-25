@@ -94,7 +94,7 @@ describe('compileTrace', () => {
       const ids = new Set(show.actors.map((a) => a.id));
       for (const e of show.events) {
         for (const [cmd, value] of Object.entries(e)) {
-          if (cmd === 'at' || cmd === 'on') continue; // modifiers qualify a command
+          if (cmd === 'at' || cmd === 'on' || cmd === 'to') continue; // modifiers qualify a command
           expect(COMMANDS as readonly string[]).toContain(cmd);
           if (cmd === 'pose') expect(POSES).toHaveProperty(value as string);
           if (cmd === 'look' || cmd === 'shot' || cmd === 'manner') {
@@ -112,6 +112,51 @@ describe('compileTrace', () => {
     const end = show.events[show.events.length - 1]!;
     expect(end.end).toEqual({ card: 'logo', text: 'DUET' });
     expect(show.tail).toBeGreaterThan(0);
+  });
+
+  it('turns the cast inward, each one toward the people it can reach', () => {
+    const show = compileTrace(duet);
+    const turned = show.events.filter((e) => e.set === 'view.yaw');
+    const yaw = (on: unknown) => turned.find((e) => e.on === on)?.to;
+    expect(turned).toHaveLength(3); // one each, and nobody turns again in this run
+    expect(yaw('cue')).toBe(0.38); // reaches max and kid, both to its right
+    expect(yaw('max')).toBe(0.38); // reaches kid, to its right
+    expect(yaw('kid')).toBe(-0.38); // reaches max, to its left
+    for (const e of turned) expect(e.set).toBe('view.yaw');
+  });
+
+  it('turns a character back when it answers someone on its other side', () => {
+    const trace = parseTrace({
+      format: 'agent-neuron-trace',
+      version: 1,
+      demo: 'turn',
+      neurons: [
+        { id: 'a', kind: 'run' },
+        { id: 'b', kind: 'run' },
+        { id: 'c', kind: 'run' }
+      ],
+      links: [
+        { from: 'a', to: 'b' },
+        { from: 'b', to: 'c' },
+        { from: 'c', to: 'a' }
+      ],
+      events: [
+        { t: 0, type: 'signal', id: '1', from: 'a', to: ['b'] },
+        { t: 100, type: 'answer', id: '2', from: 'b', to: ['a'], replyTo: '1', payload: { type: 'json', data: { say: 'x' } } }
+      ]
+    });
+    const show = compileTrace(trace);
+    const turns = show.events.filter((e) => e.set === 'view.yaw' && e.on === 'b');
+    // b faces c (its only link) at the entrance, then turns to a, who answers it
+    expect(turns.map((e) => e.to)).toEqual([0.38, -0.38]);
+    expect(turns[1]!.at[0]).toBe(turns[0]!.at[0] + 1 + 0); // a bar later: 100ms in
+  });
+
+  it('leaves a lone actor turned the way its actor already is', () => {
+    const alone = compileTrace(
+      small([], [{ id: 'max', kind: 'composed' }], [])
+    );
+    expect(alone.events.filter((e) => e.set === 'view.yaw')).toHaveLength(0);
   });
 
   it('moves the camera for the characters in a line, but not every beat', () => {

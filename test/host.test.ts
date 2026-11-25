@@ -101,4 +101,36 @@ describe('ShowHost', () => {
     host.seek(host.total);
     expect(host.stage.get('a').poseName).toBe('rest');
   });
+
+  it('finds each actor on screen, in the order the stage drew them', () => {
+    const host = new ShowHost(fakeCanvas(), show);
+    host.seek(host.total);
+    host.tick(1 / 60); // the scene exists once a frame has been drawn
+    const drawn = host.stage.S?.actors ?? [];
+    expect(drawn.length).toBe(3);
+    // the cast of the duet: cue is played by professor, and each box must be that actor's
+    for (const [id, who] of [
+      ['cue', 'professor'],
+      ['max', 'max'],
+      ['kid', 'kid']
+    ] as const) {
+      const scene = drawn.find((s) => s.F.who === who)!;
+      expect(host.actorBox(id)).toMatchObject({
+        x: scene.body.x,
+        y: scene.body.y,
+        w: scene.body.w,
+        h: scene.body.h
+      });
+    }
+    const head = host.headOf('kid')!;
+    const box = host.actorBox('kid')!;
+    expect(head).toEqual({ x: box.x + box.w / 2, y: box.y });
+  });
+
+  it('lands on the design a seek describes, not mid-morph: the cast faces itself', () => {
+    const host = new ShowHost(fakeCanvas(), show);
+    host.seek(host.total);
+    expect(host.stage.get('max').design['view.yaw']).toBeCloseTo(0.38, 5);
+    expect(host.stage.get('kid').design['view.yaw']).toBeCloseTo(-0.38, 5);
+  });
 });

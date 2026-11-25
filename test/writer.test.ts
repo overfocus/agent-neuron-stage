@@ -32,6 +32,14 @@ describe('the writer example: a network answers with a scene', () => {
     expect(fromProgram.bpm).toBe(fromFile.bpm);
   });
 
+  it('turns a score cast to face each other, as the trace compiler does', () => {
+    const show = parseShow(scene);
+    const turns = show.events.filter((e) => e.set === 'view.yaw');
+    expect(turns).toHaveLength(2); // one each, on the way on; the looks agree with them
+    expect(turns.find((e) => e.on === 'her')?.to).toBe(0.38);
+    expect(turns.find((e) => e.on === 'him')?.to).toBe(-0.38);
+  });
+
   it('writes only commands and poses the stage can draw', () => {
     const show = parseShow(scene);
     for (const event of show.events) {

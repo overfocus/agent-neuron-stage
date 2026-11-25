@@ -27,6 +27,9 @@ network with six neurons and 261 events, compiled the same way.
 
 - **play / pause** (space), **scrub**, **½×** and **2×**: the film is the run
   on one clock, and the speed is yours.
+- **bubbles | caption**: a line hangs over the speaker's head, tail on the head,
+  and follows the camera through a cut; switch to one line under the picture for
+  a dense run. The switch is remembered.
 - **cast**: every neuron as an actor, with the maxcot actor that plays it, its
   kind, its weight and its line of description. Click a row, or a character on
   the stage.
@@ -45,7 +48,8 @@ network with six neurons and 261 events, compiled the same way.
 2. **A composed neuron is a character with a mind.** Its inside is a network
    the engine seals: the stage sees one body and one voice.
 3. **Interactions are the links.** A signal is who looks at whom; a reply
-   chain is an exchange; `maxHops` is how long an argument lasts.
+   chain is an exchange; the body turns to whoever it addresses, and `maxHops`
+   is how long an argument lasts.
 4. **A payload may direct its own performance.** An answer that carries
    `{ say, pose, look, shot, skin }` — the line, and the face to say it with —
    is drawn that way. Anything else in a payload is ignored.
@@ -73,6 +77,8 @@ debug build next to this repo. The trace committed here was written by
 |---|---|
 | `src/trace.ts` | reads an agent-neuron trace (format v1), tolerantly |
 | `src/cast.ts` | the header as a cast: actor, manner, place, from the links |
+| `src/bubble.ts` | where a speech bubble goes: above the head, inside the frame, tail on it |
+| `src/bubbles.ts` | the bubble itself, as page text over the canvas |
 | `src/fromtrace.ts` | the compiler: trace → show, and the cue protocol |
 | `src/fromscore.ts` | a score document → show (maxcot's syntax, or JSON) |
 | `src/show.ts` | what a show is, and how it writes itself back out as a score |
@@ -86,7 +92,7 @@ debug build next to this repo. The trace committed here was written by
 ## Check
 
 ```sh
-npm run check          # tsc, vitest (47 tests), vite build
+npm run check          # tsc, vitest (59 tests), vite build
 ```
 
 The tests compile both committed traces, play a show through maxcot's real

@@ -8,6 +8,10 @@ camera anchors.
 the camera cuts, then does a bubble stay on the head — and should it be drawn
 by the page or by the canvas?
 
+> **Adopted (Kevin, 2026-11-24): DOM bubbles in the page, with the bottom
+> caption behind a switch — `docs/decisions/0002`.** This note stays as the
+> evidence and as the design of a canvas bubble if a still needs one.
+
 ## What the scene gives
 
 maxcot has no text anywhere: no bubble, no caption, no `say` field on a Scene.

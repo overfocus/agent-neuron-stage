@@ -8,6 +8,10 @@ for the numbers.
 other, when the show says they look at each other, then are their *bodies*
 actually turned toward one another — and if not, what does it take?
 
+> **Adopted (Kevin, 2026-11-24): the compiler turns the cast and a score's
+> reader does the same — `docs/decisions/0002`.** This note stays as the
+> evidence.
+
 ## What maxcot gives
 
 Three facts, from the vendored source:

@@ -22,6 +22,7 @@
       <section class="frame" aria-label="stage">
         <div class="canvas-wrap">
           <canvas id="stage" width="960" height="600"></canvas>
+          <div id="bubbles" class="bubbles" aria-live="polite"></div>
           <div id="caption" class="caption" aria-live="polite"></div>
           <div id="card" class="card" hidden></div>
         </div>
@@ -33,6 +34,10 @@
             <option value="1">1×</option>
             <option value="0.5">½×</option>
             <option value="2">2×</option>
+          </select>
+          <select id="lines" aria-label="how a line is shown">
+            <option value="bubbles">bubbles</option>
+            <option value="caption">caption</option>
           </select>
           <span id="meta" class="meta"></span>
         </div>

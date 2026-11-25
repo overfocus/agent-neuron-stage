@@ -44,14 +44,41 @@ shape is read too — that is the form a program neuron can answer with.
 | `style` | a skin name (`pencil`, `riso`, `hologram`, …) | — | restyles the whole cast; `palette` names one of its palettes |
 | `who` | a maxcot cast name | the actor | recasts it (the design morphs) |
 | `manner` | `{ weight, idle, gaze, rest }` | the actor | how it moves: 0 light and springy, 1 heavy and slow |
-| `set` | a design dial (`"body.w"`), with `to` a number | the actor | one dial |
-| `say` | a line | the speaker | **the stage's own**: the caption under the picture |
+| `set` | a design dial (`"body.w"`), with `to` a number | the actor | one dial; a seek snaps it rather than easing the morph |
+| `say` | a line | the speaker | **the stage's own**: the bubble over the speaker's head, or the line under the picture |
 | `end` | `{ card: "logo", text: "DUET" }` | — | **the stage's own**: the end card |
 
 Modifiers, which qualify a command and are never commands themselves: `at`,
 `on`, `to`, `from`, `palette`, `cut`. A command the stage does not know is
 reported once and ignored; a command it knows with a value it does not is
 dropped (no pose that the rig cannot draw, no skin that does not exist).
+
+## Facing: which way a body points
+
+A figure is oriented by `view.yaw` (a design dial) plus `twist` (a channel), and
+yaw > 0 points screen-right. Every actor is born turned the same way, so a cast
+only faces itself if something turns it — and `look` is not enough: maxcot's
+`look()` flicks the eyes and twists the body 0.22 *away* from the target
+(measured in `spikes/001-facing`).
+
+- A **trace** is compiled with the turn: `set: "view.yaw", to: ±0.38` on the way
+  on (each character faces the middle of the people it can reach) and again when
+  it answers someone on its other side.
+- A **score** gets the same two rules when it is read: facing the middle of the
+  cast at `enter`, and turning to whoever a `look` names.
+- A score that wants another orientation sets `view.yaw` itself, after the
+  enter; the last one wins.
+
+## Speech: where a line is drawn
+
+`say` puts the line in a bubble over the speaker's head, anchored to the actor's
+body box from the last frame, so it follows the camera through a cut. The page
+keeps the older one-line caption under the picture behind a switch
+(`bubbles | caption`, remembered per browser): a dense run reads more calmly as
+one line than as a flicker of bubbles.
+
+A bubble is page text over the canvas, not canvas paint: a page screenshot has
+it, a `canvas.toDataURL()` capture does not (`spikes/002-bubbles`).
 
 ## The cue: how a payload directs its performance
 

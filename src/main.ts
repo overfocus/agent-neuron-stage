@@ -7,6 +7,7 @@ import { compileTrace } from './fromtrace.ts';
 import { parseShow } from './fromscore.ts';
 import { formatScore, type Show } from './show.ts';
 import { ShowHost } from './host.ts';
+import { Bubbles } from './bubbles.ts';
 import { eventType, parseTrace, payloadLine, type Trace } from './trace.ts';
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -26,6 +27,8 @@ const picker = $<HTMLSelectElement>('show');
 const file = $<HTMLInputElement>('file');
 const source = $('source');
 const speed = $<HTMLSelectElement>('speed');
+const lineSelect = $<HTMLSelectElement>('lines');
+const bubblesLayer = $('bubbles');
 
 interface Loaded {
   show: Show;
@@ -34,9 +37,35 @@ interface Loaded {
   label: string;
 }
 
+// How a line is shown: over the speaker's head (the default), or as one line
+// under the picture - calmer for a dense run, and what a still without the
+// page's chrome would show. The choice sticks.
+type LineMode = 'bubbles' | 'caption';
+let lineMode: LineMode = localStorage.getItem('stage.lines') === 'caption' ? 'caption' : 'bubbles';
+lineSelect.value = lineMode;
+const bubbles = new Bubbles(bubblesLayer, canvas);
+const last = { who: '', text: '' };
+
 let host: ShowHost;
 let loaded: Loaded;
 let selected = '';
+
+/** Show a line the way the reader asked for it; an empty text clears both surfaces. */
+function showLine(who: string, text: string): void {
+  last.who = who;
+  last.text = text;
+  bubbles.clear();
+  caption.classList.remove('said');
+  caption.textContent = '';
+  if (!text) return;
+  if (who) select(who);
+  if (lineMode === 'bubbles' && who) {
+    bubbles.say(who, text);
+    return;
+  }
+  caption.innerHTML = `<b>${escapeHtml(who)}</b>${escapeHtml(text)}`;
+  caption.classList.add('said');
+}
 
 function showOf(trace: Trace, label: string): Loaded {
   const show = compileTrace(trace, { title: trace.demo });
@@ -62,7 +91,10 @@ function paint(): void {
     'this is a maxcot score: the same file plays in maxcot\'s own studio'
   ]);
   paintEvents();
-  $('caption').classList.remove('said');
+  bubbles.clear();
+  last.who = '';
+  last.text = '';
+  caption.classList.remove('said');
   caption.textContent = '';
   card.hidden = true;
 }
@@ -156,6 +188,11 @@ playButton.addEventListener('click', () => host.toggle());
 scrub.addEventListener('input', () => host.seek(Number(scrub.value)));
 speed.addEventListener('change', () => {
   host.speed = Number(speed.value) || 1;
+});
+lineSelect.addEventListener('change', () => {
+  lineMode = lineSelect.value === 'caption' ? 'caption' : 'bubbles';
+  localStorage.setItem('stage.lines', lineMode);
+  showLine(last.who, last.text); // move the line that is showing to the other surface
 });
 window.addEventListener('keydown', (event) => {
   if (event.target instanceof HTMLInputElement && event.target.type === 'file') return;
@@ -254,14 +291,11 @@ picker.addEventListener('change', () => loadBundled(picker.value));
 
 const first = parseTrace(BUNDLED[0]!.json);
 host = new ShowHost(canvas, compileTrace(first, { title: first.demo }), {
-  onLine(who, text) {
-    caption.classList.toggle('said', !!text);
-    caption.innerHTML = text ? `<b>${escapeHtml(who)}</b>${escapeHtml(text)}` : '';
-    if (who) select(who);
-  },
+  onLine: showLine,
   onCard(text) {
     card.hidden = !text;
     card.textContent = text ?? '';
+    if (text) bubbles.clear();
   },
   onFrame(bar, beat, seconds) {
     clock.textContent = `${bar}.${Number(beat.toFixed(2))} · ${seconds.toFixed(1)}s`;
@@ -278,6 +312,7 @@ function loop(now: number): void {
   const dt = Math.min(0.1, Math.max(0, (now - previous) / 1000));
   previous = now;
   host.tick(dt);
+  if (bubbles.speaker) bubbles.place(host.headOf(bubbles.speaker));
   playButton.textContent = host.playing ? '❚❚' : '▶';
   playButton.setAttribute('aria-label', host.playing ? 'pause' : 'play');
   if (host.playing) scrub.value = String(host.time);

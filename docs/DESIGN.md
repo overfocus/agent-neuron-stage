@@ -185,7 +185,7 @@ open question in the design** (see §9).
 
 | Missing | Cost today | Where the change belongs |
 |---|---|---|
-| text on the canvas (a speech bubble) | captions live outside the picture; a screenshot of the stage alone has no dialogue | maxcot (a skin-level primitive) |
+| text on the canvas (a speech bubble painted into the picture) | a bubble is page text over the canvas: it follows the head and a page screenshot keeps it, but `canvas.toDataURL()` does not | maxcot (a text field on the scene) |
 | per-actor skins | one skin paints the whole cast, so a cue's `skin` restyles everyone | maxcot (`Stage` holding a skin per member) |
 | a text/word pose vocabulary | the 95 poses are posture and face, not speech; a line and a pose can agree but never *perform* the words | maxcot, or a stage-side animation of the mouth while a caption holds |
 | state that survives a line | a `run` neuron is a fresh process per signal, so each character answers from scratch; a character with a memory needs a `serve` mind | agent-neuron (`serve` exists; the mind programs would change) |
@@ -193,6 +193,10 @@ open question in the design** (see §9).
 | a cast larger than 8 | extra neurons reuse maxcot's 8 actors | maxcot (`cast()` is public; a design table per character) |
 
 None of these blocks the idea. The first two are the ones I would ask for.
+
+Two of them were taken up on 2026-11-24 — a cast that turns to face the one it
+addresses, and a line that hangs over its speaker's head (`decision 0002`); the
+rest still stand.
 
 ## 9. Open questions, and how they were answered
 

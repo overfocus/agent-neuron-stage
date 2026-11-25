@@ -116,6 +116,30 @@ export class ShowHost {
     return this.stage.pick(x, y);
   }
 
+  /**
+   * An actor's body box in canvas pixels, from the frame the stage last drew:
+   * its top edge is the top of the head, which is where a bubble hangs.
+   *
+   * The stage draws its members far to near (z descending) and hands the
+   * scenes in that order, so this mirrors that one rule; a test pins it.
+   */
+  actorBox(id: string): { x: number; y: number; w: number; h: number } | null {
+    const S = this.stage.S;
+    if (!S) return null;
+    const scenes = S.actors ?? [S];
+    const ordered = this.stage.members.slice().sort((a, b) => b.z - a.z);
+    const i = ordered.findIndex((m) => m.id === id);
+    if (i < 0) return null;
+    const box = scenes[i]?.body;
+    return box ? { x: box.x, y: box.y, w: box.w, h: box.h } : null;
+  }
+
+  /** The top centre of an actor's head: the anchor of a speech bubble. */
+  headOf(id: string): { x: number; y: number } | null {
+    const box = this.actorBox(id);
+    return box ? { x: box.x + box.w / 2, y: box.y } : null;
+  }
+
   // ── the stage, rebuilt from the show ────────────────────────────────────
   private reset(): void {
     for (const member of [...this.stage.members]) this.stage.remove(member.id);
@@ -235,7 +259,10 @@ export class ShowHost {
         const id = this.actorId(event);
         const key = text(value);
         if (!id || !key || !this.stage.has(id)) return;
-        this.stage.get(id).set(key, Number(event.to));
+        const actor = this.stage.get(id);
+        actor.set(key, Number(event.to));
+        // a seek must land on the design the score describes, not mid-morph
+        if (ctx.instant) actor.snap();
         this.stage.dirty = true;
         return;
       }

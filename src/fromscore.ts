@@ -7,6 +7,7 @@
 // the way a network file declares its neurons.
 import { parseScore } from 'maxcot/score';
 import type { ScoreEvent } from 'maxcot/score';
+import { FACING } from './cast.ts';
 import type { Show, ShowActor } from './show.ts';
 
 export interface ScoreOptions {
@@ -88,6 +89,38 @@ export function parseShow(text: string, o: ScoreOptions = {}): Show {
     a.x = (i - (loose.length - 1) / 2) * 1.9;
   });
 
+  // ── staging: which way the bodies turn ──────────────────────────────────
+  // A score says who looks at whom, not which way a body turns (maxcot's look()
+  // only flicks the eyes, and twists the body away: spikes/001-facing). The
+  // reader applies the stage's two rules - face the middle of the cast on the
+  // way on, and turn to whoever you look at - exactly as the trace compiler
+  // does, so a score a person writes and a score a network answers look alike.
+  const events: ScoreEvent[] = [];
+  const turnedTo = new Map<string, number>();
+  const turn = (id: string, targetX: number | undefined, at: ScoreEvent['at']): void => {
+    const actor = index.get(id);
+    if (!actor || targetX == null || !Number.isFinite(targetX)) return;
+    const dir = Math.sign(targetX - actor.x);
+    if (!dir) return;
+    const yaw = Math.round(dir * FACING * 1000) / 1000;
+    if (turnedTo.get(id) === yaw) return;
+    turnedTo.set(id, yaw);
+    events.push({ at, set: 'view.yaw', to: yaw, on: id });
+  };
+  for (const event of doc.events) {
+    events.push(event);
+    const entered = idOfEnter(event.enter);
+    if (entered && index.has(entered) && !turnedTo.has(entered)) {
+      const others = actors.filter((a) => a.id !== entered).map((a) => a.x);
+      turn(entered, others.length ? others.reduce((sum, x) => sum + x, 0) / others.length : undefined, event.at);
+    }
+    const looker = typeof event.on === 'string' ? event.on : undefined;
+    const target = typeof event.look === 'string' ? event.look : undefined;
+    if (looker && target && target !== 'us' && target !== 'none' && index.has(target)) {
+      turn(looker, index.get(target)!.x, event.at);
+    }
+  }
+
   const styles = doc.events.filter((e) => typeof e.style === 'string');
   const lastStyle = styles[styles.length - 1];
   return {
@@ -98,8 +131,16 @@ export function parseShow(text: string, o: ScoreOptions = {}): Show {
     skin: (lastStyle?.style as string) ?? o.skin ?? 'pencil',
     tail: doc.tail ?? 3,
     actors,
-    events: doc.events
+    events
   };
+}
+
+/** The id an `enter` command puts on the stage: a name, or an object's id/who. */
+function idOfEnter(value: unknown): string | undefined {
+  if (typeof value === 'string') return value;
+  if (!value || typeof value !== 'object') return undefined;
+  const v = value as Record<string, unknown>;
+  return typeof v.id === 'string' ? v.id : typeof v.who === 'string' ? v.who : undefined;
 }
 
 function readDocument(text: string): ScoreDocument {

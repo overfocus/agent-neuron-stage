@@ -31,6 +31,12 @@ export interface CastOptions {
 }
 
 const SPACING = 1.9;
+/**
+ * The yaw a character turns to face another: maxcot's own three-quarter turn.
+ * A figure is oriented by view.yaw plus twist, and yaw > 0 points screen-right
+ * (see spikes/001-facing for the measurements).
+ */
+export const FACING = 0.38;
 const ALIAS: Record<string, string> = {
   kid: 'child',
   boy: 'child',
