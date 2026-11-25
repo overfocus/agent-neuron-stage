@@ -68,24 +68,25 @@ describe('compileTrace', () => {
     expect(poses).toContain('feel-sulking');
   });
 
-  it('makes a dropped line a refusal, not a silence', () => {
-    const show = compileTrace(duet);
-    const drops = duet.events.filter((e) => e.type === 'drop');
-    expect(drops.length).toBeGreaterThan(0);
-    for (const drop of drops) {
-      const refused = show.events.filter((e) => e.pose === 'dunno' && e.on === drop.neuron);
-      expect(refused, `a refusal from ${drop.neuron}`).not.toHaveLength(0);
-    }
-    // and a drop on its own is exactly one refusal, on the neuron that refused
-    const one = compileTrace(
+  it('makes a dropped line a reaction when a character had one, and nothing at the room’s limit', () => {
+    // a hop limit is the room's, not a character's: no shrug for it
+    const atLimit = compileTrace(
       small([
         { t: 0, type: 'signal', id: '1', from: 'max', to: ['cue'], hops: 4 },
         { t: 5, type: 'drop', id: '1', from: 'max', to: ['cue'], neuron: 'cue', reason: 'hops' }
       ])
     );
-    const refusals = one.events.filter((e) => e.pose === 'dunno');
-    expect(refusals).toHaveLength(1);
-    expect(refusals[0]!.on).toBe('cue');
+    expect(atLimit.events.filter((e) => e.pose === 'dunno')).toHaveLength(0);
+    // but being talked over, or waiting too long, is a face
+    const talkedOver = compileTrace(
+      small([
+        { t: 0, type: 'signal', id: '1', from: 'max', to: ['cue'], hops: 1 },
+        { t: 5, type: 'drop', id: '1', from: 'max', to: ['cue'], neuron: 'cue', reason: 'replaced' },
+        { t: 9, type: 'drop', id: '1', from: 'max', to: ['cue'], neuron: 'max', reason: 'expired' }
+      ])
+    );
+    expect(talkedOver.events.filter((e) => e.pose === 'fedup').map((e) => e.on)).toEqual(['cue']);
+    expect(talkedOver.events.filter((e) => e.pose === 'eyes-sleepy').map((e) => e.on)).toEqual(['max']);
   });
 
   it('only ever emits a pose the rig has, a command the stage knows, and an actor it has', () => {

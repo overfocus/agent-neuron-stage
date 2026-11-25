@@ -8,7 +8,7 @@ import { ShowHost } from '../src/host.ts';
 import { parseTrace } from '../src/trace.ts';
 import { parseShow } from '../src/fromscore.ts';
 import duetJson from '../src/traces/duet.json';
-import riemannJson from '../src/traces/riemann.json';
+import labJson from '../src/traces/lab.json';
 
 const duet = parseTrace(duetJson);
 const show = compileTrace(duet);
@@ -204,13 +204,61 @@ describe('ShowHost', () => {
     expect(unknown).toEqual([]);
   });
 
+  it('turns the body to whoever it looks at, and follows them as they walk', () => {
+    const show = parseShow(`{
+      title: 'look', bpm: 60,
+      events: [
+        { at: [1, 1], enter: { id: 'a', who: 'max', x: -2 } },
+        { at: [1, 1], enter: { id: 'b', who: 'girl', x: 2 } },
+        { at: [1, 2], look: 'b', on: 'a' },
+        { at: [2, 1], move: { x: -4 }, over: 1, on: 'b' },
+      ],
+    }`);
+    const host = new ShowHost(fakeCanvas(), show);
+    host.seek(1.5);
+    expect(host.stage.get('a').design['view.yaw']).toBeCloseTo(0.38, 2); // b is to its right
+    // b walks past a, to the left: a's body turns to keep facing b
+    host.seek(6);
+    for (let i = 0; i < 60; i++) host.tick(1 / 60);
+    expect(host.stage.member('b').x).toBe(-4);
+    expect(host.stage.get('a').design['view.yaw']).toBeCloseTo(-0.38, 1);
+  });
+
+  it('turns a walking body the way it is going, unless it is addressing someone', () => {
+    const show = parseShow(`{
+      title: 'walk on', bpm: 60,
+      events: [
+        { at: [1, 1], enter: { id: 'a', who: 'max', x: 0 } },
+        { at: [1, 1], enter: { id: 'b', who: 'girl', x: 3 } },
+        { at: [1, 2], move: { dx: -2 }, over: 1, on: 'a' },
+      ],
+    }`);
+    const host = new ShowHost(fakeCanvas(), show);
+    host.seek(2);
+    expect(host.stage.get('a').design['view.yaw']).toBeCloseTo(-0.38, 2);
+    // and an author's own `set` wins over the automatic turn
+    const turned = parseShow(`{
+      title: 'set', bpm: 60,
+      events: [
+        { at: [1, 1], enter: { id: 'a', who: 'max', x: 0 } },
+        { at: [1, 1], enter: { id: 'b', who: 'girl', x: 3 } },
+        { at: [1, 2], look: 'b', on: 'a' },
+        { at: [1, 3], set: 'view.yaw', to: 0.2, on: 'a' },
+      ],
+    }`);
+    const other = new ShowHost(fakeCanvas(), turned);
+    other.seek(4);
+    for (let i = 0; i < 20; i++) other.tick(1 / 60);
+    expect(other.stage.get('a').design['view.yaw']).toBeCloseTo(0.2, 1);
+  });
+
   it('draws the trace’s depth: a near figure bigger and higher than a far one', () => {
-    const riemann = compileTrace(parseTrace(riemannJson));
-    const host = new ShowHost(fakeCanvas(960, 600), riemann);
+    const lab = compileTrace(parseTrace(labJson));
+    const host = new ShowHost(fakeCanvas(960, 600), lab);
     host.seek(1.2); // after every enter, before the first camera move
     host.tick(1 / 60);
-    expect(host.stage.member('ada').z).toBe(-1);
-    expect(host.stage.member('otto').z).toBe(1.6);
+    expect(host.stage.member('ada').z).toBe(-1.2);
+    expect(host.stage.member('otto').z).toBe(3.7);
     const near = host.actorBox('ada')!;
     const far = host.actorBox('otto')!;
     // Designs differ in build, so compare the unit they are drawn at: box

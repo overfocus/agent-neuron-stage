@@ -1,0 +1,102 @@
+{
+  "version": 0,
+  "name": "the lab",
+  "description": "Seven scientists in a lab at 2am, arguing about the Riemann hypothesis. Nobody is called on: the question goes to all seven, every answer goes to whoever that scientist talks to, and each one decides for itself whether to take the floor - so the conversation wanders instead of taking turns. Their places span a bigger room (x from -5.6 to 5.2, z from -1.2 to 3.7), and every speaker walks as it talks: the near ones give ground, the far ones come down out of the dark at the back.",
+  "neurons": [
+    {
+      "id": "cue",
+      "source": true,
+      "at": [-5.6, 0, 0.3],
+      "description": "The question the room is asked: whoever holds the stage says it once, and the whole lab hears it."
+    },
+    {
+      "id": "ada",
+      "run": ["node", "mind/ada.mjs"],
+      "timeout": 20000,
+      "maxHops": 2,
+      "at": [-3.2, 0, -1.2],
+      "may": { "connect": ["127.0.0.1:11434"] },
+      "description": "Ada, at the near bench and closest to certainty: an analytic number theorist who will not take a hunch for evidence."
+    },
+    {
+      "id": "jules",
+      "run": ["node", "mind/jules.mjs"],
+      "timeout": 20000,
+      "maxHops": 2,
+      "at": [0.4, 0, -1.0],
+      "may": { "connect": ["127.0.0.1:11434"] },
+      "description": "Jules, in the middle of the floor: not a number theorist and not shy about asking what any of it pays for."
+    },
+    {
+      "id": "rosa",
+      "run": ["node", "mind/rosa.mjs"],
+      "timeout": 20000,
+      "maxHops": 2,
+      "at": [3.4, 0, -0.9],
+      "may": { "connect": ["127.0.0.1:11434"] },
+      "description": "Rosa, at the far bench: she trusts counts and bounds, has checked more zeros than anyone here, and says it proves nothing."
+    },
+    {
+      "id": "bruno",
+      "run": ["node", "mind/bruno.mjs"],
+      "timeout": 20000,
+      "maxHops": 2,
+      "at": [5.2, 0, 1.3],
+      "may": { "connect": ["127.0.0.1:11434"] },
+      "description": "Bruno, out at the edge of the light: he hears the zeros as a chord and overclaims in images."
+    },
+    {
+      "id": "iris",
+      "run": ["node", "mind/iris.mjs"],
+      "timeout": 20000,
+      "maxHops": 2,
+      "at": [3.2, 0, 3.2],
+      "may": { "connect": ["127.0.0.1:11434"] },
+      "description": "Iris, back by the shelves: a historian of mathematics who dates every claim and corrects the record."
+    },
+    {
+      "id": "otto",
+      "run": ["node", "mind/otto.mjs"],
+      "timeout": 20000,
+      "maxHops": 2,
+      "at": [-0.4, 0, 3.7],
+      "may": { "connect": ["127.0.0.1:11434"] },
+      "description": "Otto, deepest at the back: a physicist who hears random matrices in the zeros and reaches for analogy before proof."
+    },
+    {
+      "id": "lea",
+      "run": ["node", "mind/lea.mjs"],
+      "timeout": 20000,
+      "maxHops": 2,
+      "at": [-4.2, 0, 2.7],
+      "may": { "connect": ["127.0.0.1:11434"] },
+      "description": "Lea, back left with the chalk: a formalist who wants to know what 'true' is supposed to mean here."
+    }
+  ],
+  "links": [
+    { "from": "cue", "to": "ada" },
+    { "from": "cue", "to": "jules" },
+    { "from": "cue", "to": "rosa" },
+    { "from": "cue", "to": "bruno" },
+    { "from": "cue", "to": "iris" },
+    { "from": "cue", "to": "otto" },
+    { "from": "cue", "to": "lea" },
+    { "from": "ada", "to": "bruno" },
+    { "from": "ada", "to": "lea" },
+    { "from": "ada", "to": "otto" },
+    { "from": "rosa", "to": "iris" },
+    { "from": "rosa", "to": "jules" },
+    { "from": "bruno", "to": "ada" },
+    { "from": "bruno", "to": "rosa" },
+    { "from": "iris", "to": "rosa" },
+    { "from": "iris", "to": "bruno" },
+    { "from": "otto", "to": "lea" },
+    { "from": "otto", "to": "ada" },
+    { "from": "otto", "to": "jules" },
+    { "from": "lea", "to": "jules" },
+    { "from": "lea", "to": "iris" },
+    { "from": "jules", "to": "ada" },
+    { "from": "jules", "to": "rosa" },
+    { "from": "jules", "to": "otto" }
+  ]
+}

@@ -42,11 +42,13 @@ a network's answer: one program that writes a scene and answers with it
 (`examples/writer/`). **alerts** is a recording shipped with agent-neuron: a
 network with six neurons and 261 events, compiled the same way. **troupe** is
 the other way round: six characters, each one neuron, each answering with its own
-line, face and hand (`examples/troupe/`). **riemann** is the same door with a
-model behind it: seven mathematicians at one table, each a neuron with its own
-voice, each answering the last line out loud, about the Riemann hypothesis
-(`examples/riemann/`) — and each standing at its own place in the room, so the
-cast has depth instead of a line. Under them, the **scene book**: twelve
+line, face and hand (`examples/troupe/`). **the lab** is the same door with a
+model behind it: seven scientists in a lab at 2am, each a neuron with its own
+voice and its own place in a room with depth, arguing about the Riemann
+hypothesis with nobody taking turns (`examples/lab/`) — the question goes to
+everyone, every answer goes to the two or three people that scientist talks to,
+and each decides for itself whether to take the floor, so two runs are two
+conversations. Under them, the **scene book**: twelve
 hand-written scores, one to eight characters each, from a graphite solo to a
 stencilled mob — and a scene where the blocking is the story and the characters
 walk (`scenes/12-a-walk.score`; `n` and `p` step through them).
@@ -139,14 +141,14 @@ the cast size it claims and to maxcot's own pose, skin and cast tables.
 <td><img src="media/stills/troupe.jpg" alt="troupe: six characters from a network run, six skins"></td>
 </tr>
 <tr>
-<td><img src="media/stills/riemann.jpg" alt="riemann: seven mathematicians at a table, a model in each, a room with depth"></td>
+<td><img src="media/stills/lab.jpg" alt="the lab: seven scientists in a lab, a model in each, a room with depth"></td>
 <td><img src="media/stills/a-walk.jpg" alt="a walk: three characters crossing the stage, the distance is the scene"></td>
 </tr>
 </table>
 
 Three of them are not one skin: **mosaic** draws eight characters in eight skins,
-**troupe** gets the same kind of cast out of a network run, and **riemann** puts
-seven mathematicians and a question in a room with depth. maxcot's stage
+**troupe** gets the same kind of cast out of a network run, and **the lab** puts
+seven scientists and a question in a room with depth, talking over each other. maxcot's stage
 paints a cast in a single skin by design, so those two are composited — each
 actor's scene painted again in its own skin, clipped to its body
 (`docs/SCORE.md`, *Mixed looks*; `spikes/003` has the numbers: 8 characters run
@@ -185,7 +187,7 @@ to a named bar and beat, and shoots the canvas.
 | `examples/duet/` | the two-character network, its minds, its inputs |
 | `examples/writer/` | one program that answers a whole scene, and the scene it answered |
 | `examples/troupe/` | six characters as six neurons, each with its own line and its own skin |
-| `examples/riemann/` | seven mathematicians, each a neuron and its own voice, a model answering in each |
+| `examples/lab/` | seven scientists, each a neuron and its own voice, a model answering in each |
 | `video/stills.py` | a still per scene, from the page, for the README and for posting |
 | `spikes/` | throwaway experiments with a verdict: facing, speech bubbles, mixed skins and a cast of many |
 | `vendor/maxcot/` | maxcot's library, unmodified, MIT (see `vendor/VENDORED.md`) |

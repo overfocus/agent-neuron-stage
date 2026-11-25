@@ -3,7 +3,7 @@
 import duetTrace from './traces/duet.json';
 import alertsTrace from './traces/alerts.json';
 import troupeTrace from './traces/troupe.json';
-import riemannTrace from './traces/riemann.json';
+import labTrace from './traces/lab.json';
 import writerScene from '../examples/writer/scene.score?raw';
 import { SCENES } from '../scenes/index.ts';
 import { compileTrace } from './fromtrace.ts';
@@ -70,8 +70,8 @@ function showLine(who: string, text: string): void {
   caption.classList.add('said');
 }
 
-function showOf(trace: Trace, label: string): Loaded {
-  const show = compileTrace(trace, { title: trace.demo });
+function showOf(trace: Trace, label: string, skin?: string): Loaded {
+  const show = compileTrace(trace, { title: trace.demo, skin });
   return { show, trace, label };
 }
 
@@ -274,13 +274,15 @@ interface Item {
   note?: string;
   text?: string;
   json?: unknown;
+  /** The skin the ground is painted in, when the show is more than one hand. */
+  skin?: string;
 }
 
 const BUNDLED: Item[] = [
   { key: 'duet', group: 'a run, compiled', title: 'duet', note: 'two characters, a real run of examples/duet', json: duetTrace },
   { key: 'alerts', group: 'a run, compiled', title: 'alerts', note: 'a recording of the alert storm (agent-neuron)', json: alertsTrace },
   { key: 'troupe', group: 'a run, compiled', title: 'troupe', note: 'six characters, six neurons, six skins (examples/troupe)', json: troupeTrace },
-  { key: 'riemann', group: 'a run, compiled', title: 'riemann', note: 'seven mathematicians, seven voices, a model in each (examples/riemann)', json: riemannTrace },
+  { key: 'lab', group: 'a run, compiled', title: 'the lab', note: 'seven scientists, no taking turns, a model in each (examples/lab)', json: labTrace, skin: 'stencil' },
   { key: 'writer', group: "a network's answer", title: 'writer', note: 'a scene a network wrote (examples/writer)', text: writerScene },
   ...SCENES.map((scene) => ({
     key: `scene:${scene.key}`,
@@ -319,7 +321,7 @@ function loadBundled(key: string): void {
     return;
   }
   const trace = parseTrace(item.json);
-  load({ ...showOf(trace, `${item.title}: ${item.note ?? ''}`.replace(/: $/, '')), label: `${item.title}: ${trace.events.length} events` });
+  load({ ...showOf(trace, `${item.title}: ${item.note ?? ''}`.replace(/: $/, ''), item.skin), label: `${item.title}: ${trace.events.length} events` });
 }
 
 /** The next or previous show in the list, for reading the book straight through. */

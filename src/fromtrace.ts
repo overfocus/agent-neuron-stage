@@ -58,11 +58,19 @@ export interface Cue {
   move?: MoveCue;
 }
 
-/** What a character does about a dropped line, by reason (SPEC 7.2). */
-const DROPPED: Record<string, string> = {
+/**
+ * What a character does about a dropped line, by reason (SPEC 7.2).
+ *
+ * A hop limit is the room's, not a character's: the line simply was not carried
+ * any further, so nobody reacts to it. In a free-for-all (a mesh, where most of
+ * the drops are hop limits) a shrug for every one of them reads as a room
+ * grimacing at itself. `replaced` is someone talked over, `expired` someone who
+ * waited too long; those are still a character's business.
+ */
+const DROPPED: Record<string, string | undefined> = {
   replaced: 'fedup',
   expired: 'eyes-sleepy',
-  hops: 'dunno'
+  hops: undefined
 };
 
 export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
@@ -195,6 +203,14 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
         if (!from || !byId.has(from)) break;
         const cue = cueOf(payloadValue(e.payload), byId);
         push(when, 'pose', pose(cue.pose, 'mouth-happy'), from);
+        // who this line is for: the forward's target reads better than the
+        // router's reply, which a composed neuron's caller can be
+        const addressee =
+          forwardTo.get(`${e.t}|${from}`) ?? spokeTo ?? e.to.find((id) => byId.has(id) && id !== from);
+        // the turn is written BEFORE the look, so a host that turns the body to
+        // whoever it looks at (host.ts) wins over this static, compile-time yaw;
+        // a score with no host still carries the turn (maxcot's studio plays it)
+        if (addressee && addressee !== from) faceAt(from, byId.get(addressee)?.x, when);
         if (!forwarded.has(`${e.t}|${from}`)) {
           if (spokeTo) push(when, 'look', spokeTo, from);
           else {
@@ -209,11 +225,6 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
           const { over, ...walk } = cue.move;
           events.push({ at: when, move: walk, over: over ?? 1, on: from });
         }
-        // turn to the one this line is for: the forward's target reads better than
-        // the router's reply, which a composed neuron's caller can be
-        const addressee =
-          forwardTo.get(`${e.t}|${from}`) ?? spokeTo ?? e.to.find((id) => byId.has(id) && id !== from);
-        if (addressee && addressee !== from) faceAt(from, byId.get(addressee)?.x, when);
         // A cue's skin is the look of the character that answered, not of the
         // whole cast: a network of characters can be drawn in as many hands as
         // it has voices (host.ts composites a mixed cast).
@@ -230,7 +241,8 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
       }
       case 'drop': {
         const who = e.neuron ?? e.from;
-        if (who && byId.has(who)) push(when, 'pose', pose(DROPPED[e.reason ?? ''], 'dunno'), who);
+        const reaction = DROPPED[e.reason ?? ''];
+        if (who && reaction && byId.has(who)) push(when, 'pose', reaction, who);
         break;
       }
       case 'error':

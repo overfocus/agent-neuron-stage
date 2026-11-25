@@ -114,7 +114,6 @@ export function parseShow(text: string, o: ScoreOptions = {}): Show {
     events.push({ at, set: 'view.yaw', to: yaw, on: id });
   };
   for (const event of doc.events) {
-    events.push(event);
     const entered = idOfEnter(event.enter);
     if (entered && index.has(entered) && !turnedTo.has(entered)) {
       const others = actors.filter((a) => a.id !== entered).map((a) => a.x);
@@ -122,9 +121,12 @@ export function parseShow(text: string, o: ScoreOptions = {}): Show {
     }
     const looker = typeof event.on === 'string' ? event.on : undefined;
     const target = typeof event.look === 'string' ? event.look : undefined;
+    // a look at a person turns the body to them, and the turn goes BEFORE the
+    // look so a host that faces the looked-at actor at runtime has the last word
     if (looker && target && target !== 'us' && target !== 'none' && index.has(target)) {
       turn(looker, index.get(target)!.x, event.at);
     }
+    events.push(event);
   }
 
   const styles = doc.events.filter((e) => typeof e.style === 'string' && typeof e.on !== 'string');

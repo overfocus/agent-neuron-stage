@@ -65,6 +65,8 @@ export class ShowHost {
   private actorSkin = new Map<string, string>();
   /** Walks in flight: where each actor is going, from when, over how long. */
   private walks = new Map<string, Walk>();
+  /** Actors whose body turns to follow the person they are looking at. */
+  private facing = new Set<string>();
   private frameAt = 0;
 
   constructor(canvas: HTMLCanvasElement, show: Show, hooks: HostHooks = {}) {
@@ -97,6 +99,7 @@ export class ShowHost {
     this.actorSkin = new Map(show.actors.filter((a) => a.style).map((a) => [a.id, a.style!]));
     this.conductor.songT = 0;
     this.walks.clear();
+    this.facing.clear();
     this.conductor.load(show.events, { bpm: show.bpm, beatsPerBar: show.beatsPerBar, tail: show.tail });
   }
 
@@ -119,6 +122,8 @@ export class ShowHost {
     if (this.conductor.playing) this.conductor.tick(dt * this.speed);
     // a walk is the host's: the stage is only ever told where a member stands
     this.advanceWalks(this.conductor.songT);
+    // and a body that is addressing someone keeps facing them as they move
+    this.turnToLookedAt();
     this.stage.step(dt);
     if (this.actorSkin.size) this.paintMixed();
     this.frameAt += dt;
@@ -173,6 +178,7 @@ export class ShowHost {
   // ── the stage, rebuilt from the show ────────────────────────────────────
   private reset(): void {
     this.walks.clear();
+    this.facing.clear();
     for (const member of [...this.stage.members]) this.stage.remove(member.id);
     for (const actor of this.show.actors) {
       this.stage.add({ id: actor.id, who: actor.who, x: actor.x, z: actor.z, pose: 'rest' });
@@ -254,6 +260,28 @@ export class ShowHost {
     return this.last;
   }
 
+  /** Turn a body toward a place on the floor: maxcot's own three-quarter turn. */
+  private faceTo(id: string, x: number, snap: boolean): void {
+    if (!this.stage.has(id)) return;
+    const dir = Math.sign(x - this.stage.member(id).x);
+    if (!dir) return;
+    const actor = this.stage.get(id);
+    actor.set('view.yaw', dir * 0.38);
+    if (snap) actor.snap();
+  }
+
+  /** Every actor addressing another one turns to them, wherever they have walked to. */
+  private turnToLookedAt(): void {
+    for (const id of this.facing) {
+      if (!this.stage.has(id)) {
+        this.facing.delete(id);
+        continue;
+      }
+      const looked = this.stage.member(id).lookAt;
+      if (typeof looked === 'string' && this.stage.has(looked)) this.faceTo(id, this.stage.member(looked).x, false);
+    }
+  }
+
   /**
    * Put every walking actor where the song time says it has got to. The ease is
    * smoothstep, so a walk starts and stops like a person rather than a camera;
@@ -325,9 +353,16 @@ export class ShowHost {
         const id = this.actorId(event);
         const target = text(value);
         if (!id || !this.stage.has(id)) return;
+        this.facing.delete(id);
         if (target == null || target === 'none') this.stage.look(id, null);
         else if (target === 'us') this.stage.look(id, 'us'); // out to the audience
-        else if (this.stage.has(target)) this.stage.look(id, target);
+        else if (this.stage.has(target)) {
+          this.stage.look(id, target);
+          // the body follows the person, not only the eyes: maxcot's look()
+          // twists the body away from the target, so the turn is the host's
+          this.facing.add(id);
+          this.faceTo(id, this.stage.member(target).x, ctx.instant);
+        }
         this.last = id;
         return;
       }
@@ -373,6 +408,7 @@ export class ShowHost {
         const key = text(value);
         if (!id || !key || !this.stage.has(id)) return;
         const actor = this.stage.get(id);
+        if (key === 'view.yaw') this.facing.delete(id); // the score turns this body itself
         actor.set(key, Number(event.to));
         // a seek must land on the design the score describes, not mid-morph
         if (ctx.instant) actor.snap();
@@ -398,6 +434,8 @@ export class ShowHost {
         const beats = Math.max(0, Math.min(16, num(event.over) ?? num(spec.over) ?? 1));
         const t0 = Math.max(0, ctx.now - ctx.since);
         this.walks.set(id, { id, x0: member.x, z0: member.z, x1, z1, t0, t1: t0 + beats * this.conductor.spb() });
+        // walking turns the body the way it goes, unless it is addressing someone
+        if (!this.facing.has(id) && Math.abs(x1 - member.x) > 0.15) this.faceTo(id, x1, ctx.instant);
         this.advanceWalks(ctx.now);
         this.last = id;
         this.stage.dirty = true;

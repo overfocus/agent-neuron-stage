@@ -39,7 +39,7 @@ shape is read too — that is the form a program neuron can answer with.
 | `create` | `"who"` | — | one actor whose id and cast are the same name |
 | `exit` | `"id"` | — | takes an actor off (never the last one) |
 | `pose` | one of maxcot's 95 pose names | the actor | springs that pose's layer only (a `mouth-*` leaves the body alone) |
-| `look` | another actor's id, `"us"` (the audience), or `"none"` | the actor looking | turns its eyes and a little of its body |
+| `look` | another actor's id, `"us"` (the audience), or `"none"` | the actor looking | the eyes, and the body: a character looking at someone turns to face them, and keeps facing them as they walk (the host does this at runtime; `set view.yaw` overrides it) |
 | `shot` | `"wide" \| "full" \| "medium" \| "close"` | an id or a list of ids | the camera; `wide` frames everyone or the group in `on` |
 | `style` | a skin name (`pencil`, `riso`, `hologram`, …) | — or one actor | restyles the whole cast; **with `on`, that character's own hand** (see *Mixed looks*); `palette` names one of its palettes |
 | `who` | a maxcot cast name | the actor | recasts it (the design morphs) |
@@ -179,7 +179,7 @@ above are the whole vocabulary, and each is validated before it is used.
 | `signal` from anyone else | the sender `look`s at the first receiver; two characters talking share one `wide` frame, one character gets a `full` |
 | `answer` | `pose` (from the cue, else a speaking mouth), `say` (from the cue, else the payload's line), `look` (unless the forwarding signal on the same beat says it) |
 | `quiet` | `mouth-shut` + `shrug` |
-| `drop` | `replaced` → `fedup`, `expired` → `eyes-sleepy`, `hops` → `dunno`, on the neuron that dropped it |
+| `drop` | `replaced` → `fedup`, `expired` → `eyes-sleepy`; `hops` → nothing, on the neuron that dropped it: a hop limit is the room's, not a character's reaction |
 | `error` / `unknown` | `eyes-furious` / `eyes-terrified` |
 | `note` with `what: "retry"` | `eyes-suspicious` |
 | the last moment | a `shot: wide`, then `end` with the show's title |
