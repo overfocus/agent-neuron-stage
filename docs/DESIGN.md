@@ -194,7 +194,7 @@ open question in the design** (see §9).
 
 None of these blocks the idea. The first two are the ones I would ask for.
 
-## 9. Open questions (numbered for a decision)
+## 9. Open questions, and how they were answered
 
 1. **Does the cue belong in the SPEC?** Today `{ say, pose }` is a convention of
    this repo. Making it official would mean one paragraph in agent-neuron's
@@ -218,3 +218,19 @@ None of these blocks the idea. The first two are the ones I would ask for.
 5. **A `serve` mind per character?** A character that remembers the last line
    is a better actor and a heavier engine process. Recommendation: yes, as soon
    as a scene needs a grudge.
+
+**Accepted (Kevin, 2026-11-24, go with the recs):** every recommendation above,
+spelled out:
+
+| # | The answer |
+|---|---|
+| 1 | The cue stays a convention of this repo. No paragraph in the SPEC and no engine change until a second tool wants to read `{ say, pose }`. |
+| 2 | No character sheet yet. A character stays a folder (a network plus its mind programs), and a sheet is only worth inventing when a folder stops being obvious. The writer network is built. |
+| 3 | The stage stays its own app. It becomes a pane in agent-neuron-studio only when the studio's trace pane and this one agree on a shape — not before. |
+| 4 | A long wait is compressed to a beat behind a visible cut card ("three hours later"), once a real network of ours has a wait worth filming. Until then time stays linear and the playhead is the answer. |
+| 5 | A character's mind becomes a `serve` neuron, so it remembers, when a scene needs a grudge. Not until then. |
+
+Each is a rule about *when not to build*: nothing above is a task today, and
+nothing above is a decision this repo can take on its own — 1 is
+agent-neuron's, 2 and 3 are about where the code lives, and 4 and 5 wait on a
+network that gives them a reason.

@@ -51,7 +51,8 @@ network with six neurons and 261 events, compiled the same way.
    is drawn that way. Anything else in a payload is ignored.
 
 `docs/DESIGN.md` is the longer version, including what maxcot does not have
-yet and what that costs. `docs/SCORE.md` is the command reference.
+yet, what that costs, and the five questions it answered on 2026-11-24.
+`docs/SCORE.md` is the command reference.
 
 ## Make a trace, or a show
 

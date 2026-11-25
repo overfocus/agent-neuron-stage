@@ -4,6 +4,8 @@
 bring maxcot into an agent-neuron-like studio, so that networks can create
 characters and interactions — "perhaps a character is a neuron or neuron
 network". This record is the shape that came out of it, and what was built.
+**Its five open questions were answered the same day, go with the recs** —
+`docs/DESIGN.md` §9 carries each answer spelled out.
 
 ## The problem
 
@@ -70,15 +72,20 @@ authority on their half.
 - maxcot itself is vendored unmodified (MIT), because its workspace publishes
   nothing to npm yet; `vendor/VENDORED.md` pins the commit.
 
-## Not decided here
+## Decided later (2026-11-24)
 
-- Whether the cue becomes part of agent-neuron's documented payload convention
-  (it needs no engine change either way).
-- A character sheet as a file format; a writer network that emits one.
-- A `stage` pane inside agent-neuron-studio instead of this app.
-- How to film a long wait, and whether a character's mind should be a `serve`
-  neuron so it remembers. Both are in `docs/DESIGN.md` §9, as questions with
-  recommendations.
+Left open in this record, and answered the same day when Kevin took the
+recommendations in `docs/DESIGN.md` §9 (the answers, spelled out, are there):
+
+- The cue stays a convention of this repo — not a SPEC field, no engine change,
+  until a second tool wants to read it.
+- No character-sheet format yet; a character stays a folder. (The writer
+  network that would emit one is built.)
+- The stage stays its own app; a `stage` pane in agent-neuron-studio only when
+  the two trace surfaces agree on a shape.
+- Long waits: compressed behind a visible cut card, once a real network of ours
+  has a wait worth filming. Until then, time stays linear.
+- A character's mind becomes a `serve` neuron when a scene needs a grudge.
 
 ## How it is checked
 

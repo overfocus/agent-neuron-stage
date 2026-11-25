@@ -27,6 +27,13 @@ agent-neuron-studio and agent-neuron-viz.
   the stage's two own commands; everything else is maxcot's.
 - **Do not invent time.** The film is the run on a linear clock; a run that
   wants air waits for it. Playback speed is the audience's, not the compiler's.
+- **The five answers in `docs/DESIGN.md` §9 are standing rules (accepted
+  2026-11-24), and each one says when *not* to build:** the cue stays this
+  repo's convention (no SPEC field, no engine change), a character stays a
+  folder (no sheet format), this stays its own app (no pane in the studio),
+  time stays linear (no cut card until a real network has a wait worth
+  filming), and a mind stays a `run` network (no `serve` mind until a scene
+  needs a grudge). Do not build ahead of those triggers.
 - `vendor/maxcot/` is upstream, unmodified, MIT. A fix belongs upstream; to
   re-pin, see `vendor/VENDORED.md`.
 - Relative imports carry their extension (`.ts`).
