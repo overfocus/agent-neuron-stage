@@ -42,6 +42,8 @@ interface Walk {
 export interface HostHooks {
   /** A line was spoken (or, with an empty text, the caption clears). `instant` is a seek replay. */
   onLine?(who: string, text: string, instant: boolean): void;
+  /** A character's look was changed by the score (a `style` line naming it). */
+  onLook?(id: string, skin: string): void;
   /** The end card shows, or null when it goes away. */
   onCard?(text: string | null): void;
   /** The playhead, in bars and beats, a few times a second. */
@@ -62,6 +64,8 @@ export class ShowHost {
   private skin: Skin;
   private last = '';
   private unknown = new Set<string>();
+  /** Looks the page pinned by hand: the score's `style` leaves them alone. */
+  private pinned = new Map<string, string | null>();
   /** The skin that draws each actor, when a scene mixes looks (see paintMixed). */
   private actorSkin = new Map<string, string>();
   /** Walks in flight: where each actor is going, from when, over how long. */
@@ -101,6 +105,8 @@ export class ShowHost {
     this.conductor.songT = 0;
     this.walks.clear();
     this.facing.clear();
+    // a new show is a new cast: the page's picks belonged to the last one
+    this.pinned.clear();
     this.conductor.load(show.events, { bpm: show.bpm, beatsPerBar: show.beatsPerBar, tail: show.tail });
   }
 
@@ -153,12 +159,24 @@ export class ShowHost {
   get total(): number {
     return this.conductor.total;
   }
-  /** Draw one character in its own skin (`null` puts it back in the show's). */
+  /**
+   * Draw one character in its own skin (`null` puts it back in the show's).
+   *
+   * A look chosen here is a decision the page made, so the score's own `style`
+   * line for that actor no longer overrules it - otherwise a character turns
+   * back into the skin their answers name the moment they speak again.
+   */
   setLook(id: string, skin: string | null): void {
     if (!this.stage.has(id)) return;
+    this.pinned.set(id, skin);
     if (skin) this.actorSkin.set(id, skin);
     else this.actorSkin.delete(id);
     this.stage.dirty = true;
+  }
+
+  /** The skin an actor is drawn in; null when it is the show's own. */
+  look(id: string): string | null {
+    return this.actorSkin.get(id) ?? null;
   }
 
   /** Which actor is under a canvas point, for a click. */
@@ -201,6 +219,11 @@ export class ShowHost {
     }
     this.last = this.show.actors[0]?.id ?? '';
     this.actorSkin = new Map(this.show.actors.filter((a) => a.style).map((a) => [a.id, a.style!]));
+    // a rebuild is not a change of mind: the page's own picks still stand
+    for (const [id, skin] of this.pinned) {
+      if (skin) this.actorSkin.set(id, skin);
+      else this.actorSkin.delete(id);
+    }
     this.skin = this.baseSkin;
     this.stage.setSkin(this.skin, this.show.palette);
     this.stage.shot('wide', undefined, true);
@@ -407,7 +430,9 @@ export class ShowHost {
         // cast in its own skin, and paintMixed draws this actor over it.
         const who = typeof event.on === 'string' ? event.on : undefined;
         if (who && this.stage.has(who)) {
+          if (this.pinned.has(who)) return; // the page chose this look by hand
           this.actorSkin.set(who, skin.name);
+          this.hooks.onLook?.(who, skin.name);
           this.stage.dirty = true;
           return;
         }

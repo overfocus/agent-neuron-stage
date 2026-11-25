@@ -51,6 +51,12 @@ type LineMode = 'bubbles' | 'caption';
 let lineMode: LineMode = localStorage.getItem('stage.lines') === 'caption' ? 'caption' : 'bubbles';
 lineSelect.value = lineMode;
 const bubbles = new Bubbles(bubblesLayer, canvas);
+
+// A handle for the browser while working on the page; `import.meta.env.DEV` is
+// false in a build, so it is not in the shipped page.
+if (import.meta.env.DEV) {
+  Object.defineProperty(window, '__stage', { get: () => ({ host, bubbles }), configurable: true });
+}
 /** The network pane's drawing and the run's transmissions, for the live pulse. */
 interface NetView {
   nodes: Map<string, SVGGElement>;

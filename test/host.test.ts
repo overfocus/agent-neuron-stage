@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { setCanvasFactory, type Ctx2D } from 'maxcot';
 import { compileTrace } from '../src/fromtrace.ts';
 import { ShowHost } from '../src/host.ts';
+import type { Show } from '../src/show.ts';
 import { parseTrace } from '../src/trace.ts';
 import { parseShow } from '../src/fromscore.ts';
 import duetJson from '../src/traces/duet.json';
@@ -47,6 +48,78 @@ beforeAll(() => {
 });
 
 describe('ShowHost', () => {
+  /** One actor, whose own answer names a skin: `style "manga" on: ann`. */
+  function styled(): Show {
+    return {
+      title: 'styled',
+      bpm: 120,
+      beatsPerBar: 4,
+      skin: 'pencil',
+      note: 'one actor choosing a look',
+      tail: 1,
+      actors: [{ id: 'ann', who: 'max', kind: 'neuron', weight: 0.5, x: 0, z: 0, idle: 'rest', note: '' }],
+      events: [{ at: [1, 1], on: 'ann', style: 'manga' }]
+    };
+  }
+
+  it('lets the score change a look, and tells the page about it', () => {
+    const looks: [string, string][] = [];
+    const host = new ShowHost(fakeCanvas(), styled(), { onLook: (id, skin) => looks.push([id, skin]) });
+    host.seek(2.4);
+    expect(looks.length).toBeGreaterThan(0);
+    expect(looks.every(([, skin]) => skin === 'manga')).toBe(true);
+    expect(host.look('ann')).toBe('manga');
+  });
+
+  it('does not let the score overrule a look the page chose by hand', () => {
+    const host = new ShowHost(fakeCanvas(), styled());
+    host.setLook('ann', 'ballpoint');
+    host.seek(2.4);
+    expect(host.look('ann')).toBe('ballpoint'); // the pick still stands
+    host.seek(0);
+    host.seek(2.4); // and a replay does not undo it either
+    expect(host.look('ann')).toBe('ballpoint');
+  });
+
+  // Two actors whose depth crosses while one walks past the other: the stage
+  // sorts by z at draw time and the host must map its scenes back by ACTOR, not
+  // by that sort - a walk rewrites z between two draws.
+  it('never gives a character another character\'s scene while they cross in depth', () => {
+    const walk: Show = {
+      title: 'crossing',
+      bpm: 120,
+      beatsPerBar: 4,
+      skin: 'pencil',
+      note: 'two actors crossing in depth',
+      tail: 1,
+      actors: [
+        { id: 'ann', who: 'max', kind: 'neuron', weight: 0.5, x: -1, z: -0.4, idle: 'rest', note: '' },
+        { id: 'bo', who: 'kid', kind: 'neuron', weight: 0.5, x: 1, z: 0.4, idle: 'rest', note: '' }
+      ],
+      events: [
+        { at: [1, 1], on: 'ann', move: { x: -1, z: 1.2 }, over: 4 },
+        { at: [1, 1], on: 'bo', move: { x: 1, z: -0.9 }, over: 4 }
+      ]
+    };
+    const host = new ShowHost(fakeCanvas(), walk);
+    host.seek(0.6);
+    for (let i = 0; i < 60; i++) {
+      host.tick(1 / 30);
+      const S = host.stage.S!;
+      const scenes = S.actors ?? [S];
+      for (const id of ['ann', 'bo']) {
+        const mine = scenes.find((sc) => sc.F.who === host.stage.get(id).who)!;
+        const box = host.actorBox(id)!;
+        expect({ x: box.x, y: box.y, w: box.w, h: box.h }).toEqual({
+          x: mine.body.x,
+          y: mine.body.y,
+          w: mine.body.w,
+          h: mine.body.h
+        });
+      }
+    }
+  });
+
   it('puts the cast on the stage and plays the score', () => {
     const lines: string[] = [];
     const canvas = fakeCanvas();

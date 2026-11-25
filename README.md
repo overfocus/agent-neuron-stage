@@ -72,7 +72,11 @@ walk (`scenes/12-a-walk.score`; `n` and `p` step through them).
   kind, its weight and its line of description. Click a row, or a character on
   the stage. Each row also picks that character's **skin** (any of maxcot's 26,
   or the show's own): change it and the stage repaints that one person at once,
-  which is how a mixed cast is tried out before it is written into a program.
+  which is how a mixed cast is tried out before it is written into a program. A
+  pick from this pane is a decision - the score's own `style` line for that
+  character no longer overrules it, or she would turn back into her answer's
+  skin the moment she next spoke. Where the score does change a look, the picker
+  follows it.
 - **net**: the run before it became a film — each neuron a dot where the network
   file put it, each link an arrow, and underneath, the mind every one of them
   talks to. For **the lab** that badge is the model (`glm-5.3-flash:cloud`); a
