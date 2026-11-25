@@ -1,0 +1,151 @@
+{
+  "version": 0,
+  "name": "troupe",
+  "description": "Six characters, each one neuron, each with its own line and its own hand: a cue reaches all six, every answer is sent round the ring, and maxHops 2 stops the exchange. Run it and the trace is a scene in six skins - the stage composites a mixed cast (spikes/003).",
+  "neurons": [
+    {
+      "id": "cue",
+      "source": true,
+      "at": [
+        -3,
+        0,
+        0
+      ],
+      "description": "The line that starts the scene: whoever holds the stage says it, and the troupe hears it at once."
+    },
+    {
+      "id": "ann",
+      "run": [
+        "node",
+        "mind/ann.mjs"
+      ],
+      "maxHops": 2,
+      "at": [
+        -2,
+        0,
+        0
+      ],
+      "description": "Ann, who prints in fluorescent pink and never registers the second colour."
+    },
+    {
+      "id": "bo",
+      "run": [
+        "node",
+        "mind/bo.mjs"
+      ],
+      "maxHops": 2,
+      "at": [
+        -1,
+        0,
+        0
+      ],
+      "description": "Bo, who draws in screentone and speed lines and thinks colour is for children."
+    },
+    {
+      "id": "cy",
+      "run": [
+        "node",
+        "mind/cy.mjs"
+      ],
+      "maxHops": 2,
+      "at": [
+        0,
+        0,
+        0
+      ],
+      "description": "Cy, who owns one bottle of black ink and has opinions about the others."
+    },
+    {
+      "id": "di",
+      "run": [
+        "node",
+        "mind/di.mjs"
+      ],
+      "maxHops": 2,
+      "at": [
+        1,
+        0,
+        0
+      ],
+      "description": "Di, screen-printed in three spot inks with a burst behind her, and loud about it."
+    },
+    {
+      "id": "ed",
+      "run": [
+        "node",
+        "mind/ed.mjs"
+      ],
+      "maxHops": 2,
+      "at": [
+        2,
+        0,
+        0
+      ],
+      "description": "Ed, made of light: scan lines, a lit grid, no paper at all."
+    },
+    {
+      "id": "fay",
+      "run": [
+        "node",
+        "mind/fay.mjs"
+      ],
+      "maxHops": 2,
+      "at": [
+        3,
+        0,
+        0
+      ],
+      "description": "Fay, a soft pencil and nothing more, and the only one who is not arguing."
+    }
+  ],
+  "links": [
+    {
+      "from": "cue",
+      "to": "ann"
+    },
+    {
+      "from": "cue",
+      "to": "bo"
+    },
+    {
+      "from": "cue",
+      "to": "cy"
+    },
+    {
+      "from": "cue",
+      "to": "di"
+    },
+    {
+      "from": "cue",
+      "to": "ed"
+    },
+    {
+      "from": "cue",
+      "to": "fay"
+    },
+    {
+      "from": "ann",
+      "to": "bo"
+    },
+    {
+      "from": "bo",
+      "to": "cy"
+    },
+    {
+      "from": "cy",
+      "to": "di"
+    },
+    {
+      "from": "di",
+      "to": "ed"
+    },
+    {
+      "from": "ed",
+      "to": "fay"
+    },
+    {
+      "from": "fay",
+      "to": "ann"
+    }
+  ]
+}

@@ -81,6 +81,12 @@ export function parseShow(text: string, o: ScoreOptions = {}): Show {
       const actor = index.get(e.on);
       if (actor) actor.who = e.who;
     }
+    // `style` with `on` draws one character in its own skin; without `on` it is
+    // the whole cast's look (the last one is the show's skin).
+    if (typeof e.style === 'string' && typeof e.on === 'string') {
+      const actor = index.get(e.on);
+      if (actor) actor.style = e.style;
+    }
   }
 
   // A score that never says where an actor stands gets an even line.
@@ -121,7 +127,7 @@ export function parseShow(text: string, o: ScoreOptions = {}): Show {
     }
   }
 
-  const styles = doc.events.filter((e) => typeof e.style === 'string');
+  const styles = doc.events.filter((e) => typeof e.style === 'string' && typeof e.on !== 'string');
   const lastStyle = styles[styles.length - 1];
   return {
     title: doc.title ?? o.title ?? 'a score',

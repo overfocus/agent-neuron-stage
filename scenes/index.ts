@@ -16,6 +16,7 @@ import argument from './07-argument.score?raw';
 import goodnight from './08-goodnight.score?raw';
 import unit from './09-unit.score?raw';
 import theWall from './10-the-wall.score?raw';
+import mosaic from './11-mosaic.score?raw';
 
 export interface SceneEntry {
   /** The value in the page's list. */
@@ -37,5 +38,12 @@ export const SCENES: SceneEntry[] = [
   { key: 'argument', title: 'argument', note: 'three in a red beam, cutting on the beat', actors: 3, text: argument },
   { key: 'goodnight', title: 'goodnight', note: 'two at the speed of someone falling asleep', actors: 2, text: goodnight },
   { key: 'unit', title: 'unit', note: 'five machines on an oscilloscope, heavy and still', actors: 5, text: unit },
-  { key: 'the-wall', title: 'the wall', note: 'seven in stencil, one word, then quiet', actors: 7, text: theWall }
+  { key: 'the-wall', title: 'the wall', note: 'seven in stencil, one word, then quiet', actors: 7, text: theWall },
+  {
+    key: 'mosaic',
+    title: 'mosaic',
+    note: 'eight of them, eight skins, one picture',
+    actors: 8,
+    text: mosaic
+  }
 ];

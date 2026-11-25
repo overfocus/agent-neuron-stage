@@ -10,6 +10,12 @@ import type { ScoreEvent } from 'maxcot/score';
 export interface ShowActor {
   id: string;
   who: string;
+  /**
+   * The skin that draws THIS actor, when a scene mixes looks: maxcot's Stage
+   * paints the merged cast in one skin, so a mixed cast is composited (host.ts).
+   * A show with no actor skins is painted in `Show.skin`, the old way.
+   */
+  style?: string;
   x: number;
   z: number;
   weight: number;

@@ -23,18 +23,20 @@ from playwright.sync_api import sync_playwright
 
 BASE = "http://localhost:5210/"
 
-# scene key, the beat to hold (bar, beat), slug, what the still shows
+# the list value (#show), the beat to hold (bar, beat), slug, what the still shows
 STILLS = [
-    ("one", (2, 3), "one", "a solo in graphite, the whole figure"),
-    ("duel", (3, 1), "duel", "two of them in manga, one furious one cowering"),
-    ("eight", (5, 1), "eight", "the whole cast in teletext, everybody cheering"),
-    ("noir", (6, 1), "noir", "two and a letter, in ink"),
-    ("party", (3, 2), "party", "four of them, screen-printed"),
-    ("six-ways", (4, 1), "six-ways", "six of them in a rose hologram"),
-    ("argument", (4, 2), "argument", "three in a red beam"),
-    ("goodnight", (7, 1), "goodnight", "two at the speed of falling asleep"),
-    ("unit", (3, 3), "unit", "five machines on an oscilloscope"),
-    ("the-wall", (3, 1), "the-wall", "seven in stencil"),
+    ("scene:one", (2, 3), "one", "a solo in graphite, the whole figure"),
+    ("scene:duel", (3, 1), "duel", "two of them in manga, one furious one cowering"),
+    ("scene:eight", (5, 1), "eight", "the whole cast in teletext, everybody cheering"),
+    ("scene:noir", (6, 1), "noir", "two and a letter, in ink"),
+    ("scene:party", (3, 2), "party", "four of them, screen-printed"),
+    ("scene:six-ways", (4, 1), "six-ways", "six of them in a rose hologram"),
+    ("scene:argument", (4, 2), "argument", "three in a red beam"),
+    ("scene:goodnight", (7, 1), "goodnight", "two at the speed of falling asleep"),
+    ("scene:unit", (3, 3), "unit", "five machines on an oscilloscope"),
+    ("scene:the-wall", (3, 1), "the-wall", "seven in stencil"),
+    ("scene:mosaic", (2, 1), "mosaic", "eight of them, eight skins, one picture"),
+    ("troupe", (2, 3), "troupe", "six characters, six neurons, six skins, from a real run"),
 ]
 
 
@@ -54,7 +56,7 @@ def main() -> int:
     args = ap.parse_args()
 
     wanted = {k.strip() for k in args.only.split(",")} if args.only else None
-    picks = [s for s in STILLS if not wanted or s[0] in wanted]
+    picks = [s for s in STILLS if not wanted or s[2] in wanted]
     out = pathlib.Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     social = root / "media" / "social"
@@ -81,7 +83,7 @@ def main() -> int:
         )
 
         for key, (bar, beat), slug, what in picks:
-            page.select_option("#show", f"scene:{key}")
+            page.select_option("#show", key)
             page.wait_for_timeout(400)
             meta = page.inner_text("#meta")
             found = re.search(r"(\d+(?:\.\d+)?)\s*bpm", meta)

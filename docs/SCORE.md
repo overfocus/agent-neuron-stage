@@ -41,7 +41,7 @@ shape is read too — that is the form a program neuron can answer with.
 | `pose` | one of maxcot's 95 pose names | the actor | springs that pose's layer only (a `mouth-*` leaves the body alone) |
 | `look` | another actor's id, `"us"` (the audience), or `"none"` | the actor looking | turns its eyes and a little of its body |
 | `shot` | `"wide" \| "full" \| "medium" \| "close"` | an id or a list of ids | the camera; `wide` frames everyone or the group in `on` |
-| `style` | a skin name (`pencil`, `riso`, `hologram`, …) | — | restyles the whole cast; `palette` names one of its palettes |
+| `style` | a skin name (`pencil`, `riso`, `hologram`, …) | — or one actor | restyles the whole cast; **with `on`, that character's own hand** (see *Mixed looks*); `palette` names one of its palettes |
 | `who` | a maxcot cast name | the actor | recasts it (the design morphs) |
 | `manner` | `{ weight, idle, gaze, rest }` | the actor | how it moves: 0 light and springy, 1 heavy and slow |
 | `set` | a design dial (`"body.w"`), with `to` a number | the actor | one dial; a seek snaps it rather than easing the morph |
@@ -52,6 +52,38 @@ Modifiers, which qualify a command and are never commands themselves: `at`,
 `on`, `to`, `from`, `palette`, `cut`. A command the stage does not know is
 reported once and ignored; a command it knows with a value it does not is
 dropped (no pose that the rig cannot draw, no skin that does not exist).
+
+## Mixed looks: one stage, many hands
+
+`style` with `on` draws that character in that skin for the rest of the show:
+
+```
+{ at: [1, 2], style: "riso", on: "ann" }     // ann is printed from here on
+{ at: [1, 2], style: "pencil" }              // everyone else, the old way
+```
+
+maxcot's Stage paints a cast in **one** skin by design (`Stage.draw`:
+`paint(mergeScenes(scenes), this.skin, …)`), which is what makes whole-frame
+effects possible. A score that mixes looks is drawn by the host instead: after
+the stage has built the frame, each actor's own scene is painted again in its
+own skin and composited back through a clip of that actor's body
+(`src/host.ts`, `paintMixed()`; `spikes/003` measured it). The ground stays the
+show's skin: one stage, many hands.
+
+What it costs, measured on a laptop at 1920×1080 (spike 003): 8 characters in 8
+skins run at 56 fps, 12 at 27, 16 at 17, 32 at 7 — about 2.5× the same cast in
+one skin. Eight is comfortable, twelve plays, sixteen is for stills and slow
+scenes, and past twenty the faces are gone.
+
+Two rules that follow:
+
+- A mixed cast is a **cut-out** cast. Effects that paint the whole frame
+  (datamosh, feedback, trails, a gigposter burst) are clipped at the body, so
+  they read as collage rather than as film. The skins that mix well are the
+  ones that draw inside the figure.
+- Skins that are absent from the mix on purpose: `stylemosh`, `datamosh`,
+  `databend`, `feedback`, `trails`, `pixelwind`. One of them repaints the frame
+  from the previous one, and a composite has no "previous frame" of its own.
 
 ## Facing: which way a body points
 
@@ -90,7 +122,7 @@ An answer's JSON payload may carry, flat or under `stage`:
 | `pose` | maxcot's own pose table (`POSES`) |
 | `look` | an id in this show's cast |
 | `shot` | `wide`, `full`, `medium`, `close` |
-| `skin` | `skinsByName()` |
+| `skin` | `skinsByName()` — the look of the character that answered |
 | `palette` | passed through to the skin |
 
 Anything else is ignored. A payload is never a command list: the six names

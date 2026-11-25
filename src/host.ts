@@ -15,7 +15,7 @@
 //   set 'body.w', to 1.2, on 'id'
 //   say 'line', on 'id'       the caption: the stage's own command
 //   end { text }              the card: the stage's own command
-import { Stage, type IdleHabit, type Manner, type Skin, type StageFraming } from 'maxcot';
+import { Stage, kit, paint, type IdleHabit, type Manner, type Skin, type StageFraming } from 'maxcot';
 import { createConductor, type CommandContext, type Conductor, type ScheduledEvent } from 'maxcot/score';
 import { allSkins, skinsByName } from 'maxcot/skins';
 import { hasPose } from './fromtrace.ts';
@@ -44,6 +44,8 @@ export class ShowHost {
   private skin: Skin;
   private last = '';
   private unknown = new Set<string>();
+  /** The skin that draws each actor, when a scene mixes looks (see paintMixed). */
+  private actorSkin = new Map<string, string>();
   private frameAt = 0;
 
   constructor(canvas: HTMLCanvasElement, show: Show, hooks: HostHooks = {}) {
@@ -73,6 +75,7 @@ export class ShowHost {
     this.show = show;
     this.baseSkin = skinsByName()[show.skin] ?? allSkins[0]!;
     this.skin = this.baseSkin;
+    this.actorSkin = new Map(show.actors.filter((a) => a.style).map((a) => [a.id, a.style!]));
     this.conductor.songT = 0;
     this.conductor.load(show.events, { bpm: show.bpm, beatsPerBar: show.beatsPerBar, tail: show.tail });
   }
@@ -95,6 +98,7 @@ export class ShowHost {
   tick(dt: number): void {
     if (this.conductor.playing) this.conductor.tick(dt * this.speed);
     this.stage.step(dt);
+    if (this.actorSkin.size) this.paintMixed();
     this.frameAt += dt;
     if (this.frameAt > 0.1) {
       this.frameAt = 0;
@@ -104,6 +108,10 @@ export class ShowHost {
   }
   get playing(): boolean {
     return this.conductor.playing;
+  }
+  /** Does the cast need more than one skin? (A scene that names an actor's look.) */
+  get mixed(): boolean {
+    return this.actorSkin.size > 0;
   }
   get time(): number {
     return this.conductor.songT;
@@ -148,6 +156,7 @@ export class ShowHost {
       this.stage.get(actor.id).setManner({ weight: actor.weight, idle: actor.idle as IdleHabit });
     }
     this.last = this.show.actors[0]?.id ?? '';
+    this.actorSkin = new Map(this.show.actors.filter((a) => a.style).map((a) => [a.id, a.style!]));
     this.skin = this.baseSkin;
     this.stage.setSkin(this.skin, this.show.palette);
     this.stage.shot('wide', undefined, true);
@@ -160,6 +169,58 @@ export class ShowHost {
   private settle(): void {
     this.stage.cut();
     this.stage.dirty = true;
+  }
+
+  /**
+   * A cast with more than one skin. maxcot's Stage paints the merged cast in a
+   * single skin (stage.ts: paint(merged, this.skin)), which is what makes
+   * whole-frame effects possible and per-character looks impossible. So: after
+   * the stage has built each actor's scene, paint that scene with the actor's
+   * own skin into a box-sized scratch canvas and composite it back. The box is
+   * the actor's own body plus a margin — some skins paint the whole frame, and
+   * an unclipped composite erases the cast that came before it (spikes/003).
+   */
+  private paintMixed(): void {
+    const S = this.stage.S;
+    if (!S) return;
+    const scenes = S.actors ?? [S];
+    const ctx = this.stage.ctx as unknown as CanvasRenderingContext2D;
+    const w = this.stage.canvas.width;
+    const h = this.stage.canvas.height;
+    const t = this.stage.time;
+    // the ground is the show's own skin: the stage, one look; the cast, many
+    const g = this.skin.ground;
+    const view = { w, h, t, palette: this.stage.palette, seed: Math.floor(t * (this.skin.fps || 12)), key: this.stage.key };
+    ctx.save();
+    if (g && g.draw) g.draw(ctx, w, h, t, kit, view);
+    else {
+      ctx.fillStyle = (g && g.css) || '#f3f2ec';
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.restore();
+    const ids = this.stage.members.slice().sort((a, b) => b.z - a.z).map((m) => m.id);
+    const skins = skinsByName();
+    scenes.forEach((scene, i) => {
+      const id = ids[i];
+      const skin = (id && this.actorSkin.has(id) ? skins[this.actorSkin.get(id)!] : undefined) ?? this.skin;
+      const pad = scene.unit * 0.55;
+      const box = {
+        x: Math.max(0, Math.floor(scene.body.x - pad)),
+        y: Math.max(0, Math.floor(scene.body.y - pad * 0.8))
+      };
+      const bw = Math.min(w - box.x, Math.ceil(scene.body.w + pad * 2));
+      const bh = Math.min(h - box.y, Math.ceil(scene.body.h + pad * 1.6));
+      if (bw <= 0 || bh <= 0) return;
+      // a box-sized buffer from maxcot's own pool: the same canvas factory the
+      // stage uses, so this works in a browser, a worker and the Node tests
+      const buf = kit.buffer(`mixed:${this.stage.key}`, bw, bh);
+      const sctx = buf.ctx as unknown as CanvasRenderingContext2D;
+      sctx.setTransform(1, 0, 0, 1, 0, 0);
+      sctx.clearRect(0, 0, bw, bh);
+      sctx.setTransform(1, 0, 0, 1, -box.x, -box.y);
+      paint(sctx as never, scene, skin, { t, palette: this.stage.palette, key: `${this.stage.key}:${id ?? i}`, ground: false });
+      ctx.drawImage(buf.canvas as never, box.x, box.y);
+    });
   }
 
   private actorId(event: ScheduledEvent): string {
@@ -236,6 +297,14 @@ export class ShowHost {
         const name = text(value);
         const skin = name ? skinsByName()[name] : undefined;
         if (!skin) return;
+        // `style` with `on` is one character's look: the stage keeps painting the
+        // cast in its own skin, and paintMixed draws this actor over it.
+        const who = typeof event.on === 'string' ? event.on : undefined;
+        if (who && this.stage.has(who)) {
+          this.actorSkin.set(who, skin.name);
+          this.stage.dirty = true;
+          return;
+        }
         this.skin = skin;
         this.stage.setSkin(skin, typeof event.palette === 'string' ? event.palette : undefined);
         this.stage.dirty = true;

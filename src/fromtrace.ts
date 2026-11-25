@@ -197,11 +197,11 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
         const addressee =
           forwardTo.get(`${e.t}|${from}`) ?? spokeTo ?? e.to.find((id) => byId.has(id) && id !== from);
         if (addressee && addressee !== from) faceAt(from, byId.get(addressee)?.x, when);
-        if (cue.skin || cue.palette) {
-          const styleEvent: ScoreEvent = { at: when, style: cue.skin ?? skin };
-          if (cue.palette) styleEvent.palette = cue.palette;
-          events.push(styleEvent);
-        }
+        // A cue's skin is the look of the character that answered, not of the
+        // whole cast: a network of characters can be drawn in as many hands as
+        // it has voices (host.ts composites a mixed cast).
+        if (cue.skin) events.push({ at: when, style: cue.skin, on: from });
+        if (cue.palette) events.push({ at: when, style: cue.skin ?? skin, palette: cue.palette });
         break;
       }
       case 'quiet': {
@@ -240,6 +240,15 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
   const cardAt: [number, number] = [Math.floor(cardBeat / beatsPerBar) + 1, Math.round((cardBeat % beatsPerBar) * 1000) / 1000 + 1];
   push(cardAt, 'shot', 'wide');
   push(cardAt, 'end', { card: 'logo', text: (o.title ?? title).toUpperCase() });
+
+  // A cue's skin is that character's hand for the rest of the show: keep it on
+  // the actor too, so the cast pane and the host read the cast the way the
+  // events will draw it (a show can be cast, not only played).
+  for (const e of events) {
+    if (typeof e.style !== 'string' || typeof e.on !== 'string') continue;
+    const actor = byId.get(e.on);
+    if (actor) actor.style = e.style;
+  }
 
   return {
     title,

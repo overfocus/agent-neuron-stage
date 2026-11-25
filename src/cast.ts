@@ -21,6 +21,8 @@ export interface StageActor {
   idle: string;
   kind: string;
   note: string;
+  /** The skin that draws this character, when a scene gives it its own (host.ts composites a mixed cast). */
+  style?: string;
 }
 
 export interface CastOptions {

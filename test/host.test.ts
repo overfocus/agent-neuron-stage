@@ -6,6 +6,7 @@ import { setCanvasFactory, type Ctx2D } from 'maxcot';
 import { compileTrace } from '../src/fromtrace.ts';
 import { ShowHost } from '../src/host.ts';
 import { parseTrace } from '../src/trace.ts';
+import { parseShow } from '../src/fromscore.ts';
 import duetJson from '../src/traces/duet.json';
 
 const duet = parseTrace(duetJson);
@@ -57,6 +58,41 @@ describe('ShowHost', () => {
     expect(host.playing).toBe(false);
     expect(lines).toContain('max: The tide kept me.');
     expect(lines).toContain('kid: You always say that.');
+  });
+
+  it('paints one character in its own skin when a scene says so, and the cast in one otherwise', () => {
+    const solo = new ShowHost(fakeCanvas(), show);
+    expect(solo.mixed).toBe(false); // a trace's show: one skin for the cast
+    solo.tick(0.016);
+
+    const cast = parseShow(`{
+      title: 'mosaic',
+      bpm: 100,
+      events: [
+        { at: [1, 1], enter: { id: 'a', who: 'max', x: -0.9 } },
+        { at: [1, 1], enter: { id: 'b', who: 'girl', x: 0.9 } },
+        { at: [1, 2], style: 'riso', on: 'a' },
+        { at: [2, 1], say: 'One of us is a print.', on: 'a' },
+      ],
+    }`);
+    const host = new ShowHost(fakeCanvas(), cast);
+    expect(host.mixed).toBe(true); // the cast names a look, so the host composites
+    host.seek(1.9);
+    host.tick(0.016);
+    expect(host.mixed).toBe(true);
+    expect(host.stage.members.map((m) => m.id)).toEqual(['a', 'b']);
+
+    // a `style` with no `on` is still the whole cast's look, the old way
+    const whole = parseShow(`{
+      title: 'party', bpm: 100,
+      events: [
+        { at: [1, 1], enter: { id: 'a', who: 'max' } },
+        { at: [1, 2], style: 'gigposter' },
+      ],
+    }`);
+    const other = new ShowHost(fakeCanvas(), whole);
+    expect(other.mixed).toBe(false);
+    expect(other.show.skin).toBe('gigposter');
   });
 
   it('lands in the same state whichever way the playhead is scrubbed', () => {

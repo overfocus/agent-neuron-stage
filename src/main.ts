@@ -2,6 +2,7 @@
 // is), watch it, scrub it, read what the compiler made of it.
 import duetTrace from './traces/duet.json';
 import alertsTrace from './traces/alerts.json';
+import troupeTrace from './traces/troupe.json';
 import writerScene from '../examples/writer/scene.score?raw';
 import { SCENES } from '../scenes/index.ts';
 import { compileTrace } from './fromtrace.ts';
@@ -277,6 +278,7 @@ interface Item {
 const BUNDLED: Item[] = [
   { key: 'duet', group: 'a run, compiled', title: 'duet', note: 'two characters, a real run of examples/duet', json: duetTrace },
   { key: 'alerts', group: 'a run, compiled', title: 'alerts', note: 'a recording of the alert storm (agent-neuron)', json: alertsTrace },
+  { key: 'troupe', group: 'a run, compiled', title: 'troupe', note: 'six characters, six neurons, six skins (examples/troupe)', json: troupeTrace },
   { key: 'writer', group: "a network's answer", title: 'writer', note: 'a scene a network wrote (examples/writer)', text: writerScene },
   ...SCENES.map((scene) => ({
     key: `scene:${scene.key}`,

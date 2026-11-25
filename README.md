@@ -40,9 +40,11 @@ on a stage. The run behind it is real (`examples/duet/`, four engine
 processes), and its trace is committed at `src/traces/duet.json`. **writer** is
 a network's answer: one program that writes a scene and answers with it
 (`examples/writer/`). **alerts** is a recording shipped with agent-neuron: a
-network with six neurons and 261 events, compiled the same way. Under them, the
-**scene book**: ten hand-written scores, one to eight characters each, from a
-graphite solo to a stencilled mob (`n` and `p` step through them).
+network with six neurons and 261 events, compiled the same way. **troupe** is
+the other way round: six characters, each one neuron, each answering with its own
+line, face and hand (`examples/troupe/`). Under them, the **scene book**: eleven
+hand-written scores, one to eight characters each, from a graphite solo to a
+stencilled mob (`n` and `p` step through them).
 
 - **play / pause** (space), **scrub**, **½×** and **2×**: the film is the run
   on one clock, and the speed is yours.
@@ -111,6 +113,7 @@ the cast size it claims and to maxcot's own pose, skin and cast tables.
 | [goodnight](scenes/08-goodnight.score) | 2 | sketch | two at the speed of someone falling asleep |
 | [unit](scenes/09-unit.score) | 5 | oscilloscope | five machines, heavy and still, one of them has a name |
 | [the wall](scenes/10-the-wall.score) | 7 | stencil | seven of them, one word, then quiet |
+| [mosaic](scenes/11-mosaic.score) | 8 | eight skins at once | eight people, eight hands, one picture |
 
 <table>
 <tr>
@@ -125,7 +128,18 @@ the cast size it claims and to maxcot's own pose, skin and cast tables.
 <td><img src="media/stills/six-ways.jpg" alt="six ways: six characters in a rose hologram"></td>
 <td><img src="media/stills/one.jpg" alt="one: a solo in graphite with a letter"></td>
 </tr>
+<tr>
+<td><img src="media/stills/mosaic.jpg" alt="mosaic: eight characters, each drawn in a different skin"></td>
+<td><img src="media/stills/troupe.jpg" alt="troupe: six characters from a network run, six skins"></td>
+</tr>
 </table>
+
+Two of them are not one skin: **mosaic** draws eight characters in eight skins,
+and **troupe** gets the same kind of cast out of a network run. maxcot's stage
+paints a cast in a single skin by design, so those two are composited — each
+actor's scene painted again in its own skin, clipped to its body
+(`docs/SCORE.md`, *Mixed looks*; `spikes/003` has the numbers: 8 characters run
+at 56 fps, 12 at 27, 16 at 17, 24 and up is for stills).
 
 Every still is `media/stills/<scene>.jpg` (1920×1080), taken from the page by
 `video/stills.py` — the stage as a reader sees it, cropped to the canvas, with
@@ -159,8 +173,9 @@ to a named bar and beat, and shoots the canvas.
 | `media/` | the stills: `stills/` at 1920×1080, `social/` at 1200×630 |
 | `examples/duet/` | the two-character network, its minds, its inputs |
 | `examples/writer/` | one program that answers a whole scene, and the scene it answered |
+| `examples/troupe/` | six characters as six neurons, each with its own line and its own skin |
 | `video/stills.py` | a still per scene, from the page, for the README and for posting |
-| `spikes/` | throwaway experiments with a verdict: facing, speech bubbles |
+| `spikes/` | throwaway experiments with a verdict: facing, speech bubbles, mixed skins and a cast of many |
 | `vendor/maxcot/` | maxcot's library, unmodified, MIT (see `vendor/VENDORED.md`) |
 
 ## Check
