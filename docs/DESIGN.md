@@ -187,6 +187,7 @@ open question in the design** (see §9).
 |---|---|---|
 | text on the canvas (a speech bubble painted into the picture) | a bubble is page text over the canvas: it follows the head and a page screenshot keeps it, but `canvas.toDataURL()` does not | maxcot (a text field on the scene) |
 | per-actor skins | one skin paints the whole cast, so a cue's `skin` restyles everyone | maxcot (`Stage` holding a skin per member) |
+| walking (a member moving over time) | `place()` sets `x` and `z` outright, so a walk is the host's tween: it works and seeks correctly, but it is a second clock beside the stage's | maxcot (a place target and a walk over the score's clock); meanwhile the stage's `move` command covers it |
 | a text/word pose vocabulary | the 95 poses are posture and face, not speech; a line and a pose can agree but never *perform* the words | maxcot, or a stage-side animation of the mouth while a caption holds |
 | state that survives a line | a `run` neuron is a fresh process per signal, so each character answers from scratch; a character with a memory needs a `serve` mind | agent-neuron (`serve` exists; the mind programs would change) |
 | audio | maxcot's studio has a WebAudio drum machine; the stage has no sound, so the "score" in the name is visual only | this repo (a run's ms → hits) if it ever matters |

@@ -46,9 +46,10 @@ line, face and hand (`examples/troupe/`). **riemann** is the same door with a
 model behind it: seven mathematicians at one table, each a neuron with its own
 voice, each answering the last line out loud, about the Riemann hypothesis
 (`examples/riemann/`) — and each standing at its own place in the room, so the
-cast has depth instead of a line. Under them, the **scene book**: eleven
+cast has depth instead of a line. Under them, the **scene book**: twelve
 hand-written scores, one to eight characters each, from a graphite solo to a
-stencilled mob (`n` and `p` step through them).
+stencilled mob — and a scene where the blocking is the story and the characters
+walk (`scenes/12-a-walk.score`; `n` and `p` step through them).
 
 - **play / pause** (space), **scrub**, **½×** and **2×**: the film is the run
   on one clock, and the speed is yours.
@@ -118,6 +119,7 @@ the cast size it claims and to maxcot's own pose, skin and cast tables.
 | [unit](scenes/09-unit.score) | 5 | oscilloscope | five machines, heavy and still, one of them has a name |
 | [the wall](scenes/10-the-wall.score) | 7 | stencil | seven of them, one word, then quiet |
 | [mosaic](scenes/11-mosaic.score) | 8 | eight skins at once | eight people, eight hands, one picture |
+| [a walk](scenes/12-a-walk.score) | 3 | sketch | three of them, walking: the distance is the whole scene |
 
 <table>
 <tr>
@@ -138,7 +140,7 @@ the cast size it claims and to maxcot's own pose, skin and cast tables.
 </tr>
 <tr>
 <td><img src="media/stills/riemann.jpg" alt="riemann: seven mathematicians at a table, a model in each, a room with depth"></td>
-<td></td>
+<td><img src="media/stills/a-walk.jpg" alt="a walk: three characters crossing the stage, the distance is the scene"></td>
 </tr>
 </table>
 
@@ -178,7 +180,7 @@ to a named bar and beat, and shoots the canvas.
 | `src/show.ts` | what a show is, and how it writes itself back out as a score |
 | `src/host.ts` | the thin host: commands → a maxcot `Stage` and `Conductor` |
 | `src/main.ts` | the page: canvases, transport, panes, file input |
-| `scenes/` | the scene book: eleven scores, and the list the page offers (`index.ts`) |
+| `scenes/` | the scene book: twelve scores, and the list the page offers (`index.ts`) |
 | `media/` | the stills: `stills/` at 1920×1080, `social/` at 1200×630 |
 | `examples/duet/` | the two-character network, its minds, its inputs |
 | `examples/writer/` | one program that answers a whole scene, and the scene it answered |

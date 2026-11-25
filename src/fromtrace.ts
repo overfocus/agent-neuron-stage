@@ -36,6 +36,17 @@ export type Framing = 'wide' | 'full' | 'medium' | 'close';
 const FRAMINGS: Framing[] = ['wide', 'full', 'medium', 'close'];
 const SKINS = skinsByName();
 
+/** Where a character walks during its own line: a place (`x`, `z`) or a step
+ *  (`dx`, `dz`), over `over` beats. Numbers only, clamped - a payload can say
+ *  "walk", never "run this". */
+export interface MoveCue {
+  x?: number;
+  z?: number;
+  dx?: number;
+  dz?: number;
+  over?: number;
+}
+
 /** What an answer's payload may say about its own performance. */
 export interface Cue {
   say?: string;
@@ -44,6 +55,7 @@ export interface Cue {
   shot?: Framing;
   skin?: string;
   palette?: string;
+  move?: MoveCue;
 }
 
 /** What a character does about a dropped line, by reason (SPEC 7.2). */
@@ -192,6 +204,11 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
         }
         const line = cue.say ?? payloadLine(e.payload);
         if (line) push(when, 'say', clip(line), from);
+        // a walk is the character's own again: the line lands and the body goes
+        if (cue.move) {
+          const { over, ...walk } = cue.move;
+          events.push({ at: when, move: walk, over: over ?? 1, on: from });
+        }
         // turn to the one this line is for: the forward's target reads better than
         // the router's reply, which a composed neuron's caller can be
         const addressee =
@@ -289,7 +306,27 @@ export function cueOf(value: unknown, ids: Map<string, StageActor>): Cue {
   if (typeof skin === 'string' && SKINS[skin]) cue.skin = skin;
   const palette = read('palette');
   if (typeof palette === 'string') cue.palette = palette;
+  const move = read('move');
+  if (move && typeof move === 'object' && !Array.isArray(move)) {
+    const m = move as Record<string, unknown>;
+    const walk: MoveCue = {};
+    // absolute places are body units; a step is a pace or two
+    for (const key of ['x', 'z'] as const) {
+      const v = m[key];
+      if (typeof v === 'number' && Number.isFinite(v)) walk[key] = clamp(v, -40, 40);
+    }
+    for (const key of ['dx', 'dz'] as const) {
+      const v = m[key];
+      if (typeof v === 'number' && Number.isFinite(v)) walk[key] = clamp(v, -6, 6);
+    }
+    if (typeof m.over === 'number' && Number.isFinite(m.over)) walk.over = clamp(m.over, 0, 8);
+    if (walk.x !== undefined || walk.z !== undefined || walk.dx !== undefined || walk.dz !== undefined) cue.move = walk;
+  }
   return cue;
+}
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n));
 }
 
 export function hasPose(name: string): boolean {

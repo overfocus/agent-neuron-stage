@@ -50,6 +50,7 @@ export const COMMANDS = [
   'who',
   'manner',
   'set',
+  'move',
   'say',
   'end'
 ] as const;

@@ -13,13 +13,30 @@
 //   who 'cast', on 'id'       recast an actor
 //   manner { weight, idle }, on 'id'
 //   set 'body.w', to 1.2, on 'id'
+//   move { x, z } or { dx, dz }, over 2, on 'id'   a walk: the stage's own
 //   say 'line', on 'id'       the caption: the stage's own command
 //   end { text }              the card: the stage's own command
+//
+// maxcot's Stage can place a member but not walk one (stage.ts: place() sets x
+// and z outright). So `move` is a host tween over score time: the stage is told
+// a new place every frame, eased, and a seek lands the walk where the seek
+// points rather than at its end.
 import { Stage, kit, paint, type IdleHabit, type Manner, type Skin, type StageFraming } from 'maxcot';
 import { createConductor, type CommandContext, type Conductor, type ScheduledEvent } from 'maxcot/score';
 import { allSkins, skinsByName } from 'maxcot/skins';
 import { hasPose } from './fromtrace.ts';
 import type { Show } from './show.ts';
+
+/** One walk in flight: from where to where, between two song times. */
+interface Walk {
+  id: string;
+  x0: number;
+  z0: number;
+  x1: number;
+  z1: number;
+  t0: number;
+  t1: number;
+}
 
 export interface HostHooks {
   /** A line was spoken (or, with an empty text, the caption clears). */
@@ -46,6 +63,8 @@ export class ShowHost {
   private unknown = new Set<string>();
   /** The skin that draws each actor, when a scene mixes looks (see paintMixed). */
   private actorSkin = new Map<string, string>();
+  /** Walks in flight: where each actor is going, from when, over how long. */
+  private walks = new Map<string, Walk>();
   private frameAt = 0;
 
   constructor(canvas: HTMLCanvasElement, show: Show, hooks: HostHooks = {}) {
@@ -60,8 +79,8 @@ export class ShowHost {
       beatsPerBar: show.beatsPerBar,
       events: show.events,
       tail: show.tail,
-      // `on`, `palette`, `to` and `from` qualify a command; they are not commands.
-      modifiers: ['at', 'on', 'to', 'from', 'palette', 'cut'],
+      // `on`, `palette`, `to`, `from` and `over` qualify a command; they are not commands.
+      modifiers: ['at', 'on', 'to', 'from', 'palette', 'over', 'cut'],
       onCommand: (cmd, value, event, ctx) => this.exec(cmd, value, event, ctx),
       onReset: () => this.reset(),
       onSettle: () => this.settle()
@@ -77,6 +96,7 @@ export class ShowHost {
     this.skin = this.baseSkin;
     this.actorSkin = new Map(show.actors.filter((a) => a.style).map((a) => [a.id, a.style!]));
     this.conductor.songT = 0;
+    this.walks.clear();
     this.conductor.load(show.events, { bpm: show.bpm, beatsPerBar: show.beatsPerBar, tail: show.tail });
   }
 
@@ -97,6 +117,8 @@ export class ShowHost {
   /** Advance by dt seconds and draw. Safe to call while paused: the actors keep settling. */
   tick(dt: number): void {
     if (this.conductor.playing) this.conductor.tick(dt * this.speed);
+    // a walk is the host's: the stage is only ever told where a member stands
+    this.advanceWalks(this.conductor.songT);
     this.stage.step(dt);
     if (this.actorSkin.size) this.paintMixed();
     this.frameAt += dt;
@@ -150,6 +172,7 @@ export class ShowHost {
 
   // ── the stage, rebuilt from the show ────────────────────────────────────
   private reset(): void {
+    this.walks.clear();
     for (const member of [...this.stage.members]) this.stage.remove(member.id);
     for (const actor of this.show.actors) {
       this.stage.add({ id: actor.id, who: actor.who, x: actor.x, z: actor.z, pose: 'rest' });
@@ -167,6 +190,8 @@ export class ShowHost {
 
   /** A seek has replayed history: put the camera where the replay left it, without easing. */
   private settle(): void {
+    // a seek that lands inside a walk stands the actor mid-step, not at its end
+    this.advanceWalks(this.conductor.songT);
     this.stage.cut();
     this.stage.dirty = true;
   }
@@ -227,6 +252,25 @@ export class ShowHost {
     const on = event.on;
     if (typeof on === 'string' && this.stage.has(on)) return on;
     return this.last;
+  }
+
+  /**
+   * Put every walking actor where the song time says it has got to. The ease is
+   * smoothstep, so a walk starts and stops like a person rather than a camera;
+   * `p >= 1` ends it, and a walk whose actor left is dropped.
+   */
+  private advanceWalks(now: number): void {
+    for (const walk of [...this.walks.values()]) {
+      if (!this.stage.has(walk.id)) {
+        this.walks.delete(walk.id);
+        continue;
+      }
+      const span = walk.t1 - walk.t0;
+      const p = span <= 0 ? 1 : Math.min(1, Math.max(0, (now - walk.t0) / span));
+      const e = p * p * (3 - 2 * p);
+      this.stage.place(walk.id, walk.x0 + (walk.x1 - walk.x0) * e, walk.z0 + (walk.z1 - walk.z0) * e);
+      if (p >= 1) this.walks.delete(walk.id);
+    }
   }
 
   private exec(cmd: string, value: unknown, event: ScheduledEvent, ctx: CommandContext): void {
@@ -335,6 +379,30 @@ export class ShowHost {
         this.stage.dirty = true;
         return;
       }
+      case 'move': {
+        const id = this.actorId(event);
+        const spec = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
+        if (!id || !spec || !this.stage.has(id)) return;
+        const member = this.stage.member(id);
+        // absolute x/z, or a step from where the actor stands now
+        const dx = num(spec.dx);
+        const dz = num(spec.dz);
+        const x1 = num(spec.x) ?? (dx != null ? member.x + dx : member.x);
+        const z1 = num(spec.z) ?? (dz != null ? member.z + dz : member.z);
+        if (!Number.isFinite(x1) || !Number.isFinite(z1)) return;
+        if (x1 === member.x && z1 === member.z) return;
+        // the walk starts at the event's own time, even on a replay: `since` is
+        // how long ago that was, so a seek into the middle of a walk lands mid-step
+        // `over` is a modifier on the event (a score writes `over: 2` beside the
+        // move); a cue that nests it in the walk is accepted too
+        const beats = Math.max(0, Math.min(16, num(event.over) ?? num(spec.over) ?? 1));
+        const t0 = Math.max(0, ctx.now - ctx.since);
+        this.walks.set(id, { id, x0: member.x, z0: member.z, x1, z1, t0, t1: t0 + beats * this.conductor.spb() });
+        this.advanceWalks(ctx.now);
+        this.last = id;
+        this.stage.dirty = true;
+        return;
+      }
       case 'say': {
         const id = this.actorId(event);
         const line = text(value) ?? '';
@@ -354,6 +422,10 @@ export class ShowHost {
       }
     }
   }
+}
+
+function num(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 function text(value: unknown): string | undefined {

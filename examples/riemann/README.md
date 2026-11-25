@@ -42,6 +42,16 @@ here. `RIEMANN_MODEL` overrides it. Two details matter:
 The program answers `{ say, pose, skin }` — three of the six names a cue may
 carry (`docs/SCORE.md`). Nothing in it can reach the stage beyond those fields.
 
+## They walk, too
+
+Every answer carries a step as well as a line: `{ say, pose, skin, move }`, with
+the step a fixed half-pace toward the middle of the room that belongs to that
+character in `mind/glm.mjs` — never a number the model chose. The compiler turns
+it into the stage's `move` command, so the seven close the distance as the
+conversation goes on: the near ones give ground, the far ones come in, and the
+depth changes with them. A move is a place (`x`, `z`) or a step from where the
+body stands (`dx`, `dz`), over `over` beats (`docs/SCORE.md`, *Walking*).
+
 ## The seven voices
 
 Each character's prompt is in `mind/glm.mjs`: a temperament, a way of talking,

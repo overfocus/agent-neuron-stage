@@ -22,6 +22,7 @@ const SETTING =
 const VOICES = {
   ada: {
     skin: 'sketch',
+    step: { dx: -0.1, dz: 0.3 },
     poses: ['thinking', 'dunno', 'deal'],
     signature: 'thinking',
     temperature: 0.55,
@@ -32,6 +33,7 @@ const VOICES = {
   },
   rosa: {
     skin: 'pixel',
+    step: { dx: -0.45, dz: 0.15 },
     poses: ['deal', 'thinking', 'pleased'],
     signature: 'deal',
     temperature: 0.5,
@@ -41,6 +43,7 @@ const VOICES = {
   },
   bruno: {
     skin: 'riso',
+    step: { dx: -0.5, dz: -0.15 },
     poses: ['feel-happy', 'pleased', 'feel-surprised'],
     signature: 'feel-happy',
     temperature: 0.9,
@@ -51,6 +54,7 @@ const VOICES = {
   },
   iris: {
     skin: 'inkpunch',
+    step: { dx: -0.35, dz: -0.3 },
     poses: ['letter', 'thinking', 'at-ease'],
     signature: 'letter',
     temperature: 0.6,
@@ -61,6 +65,7 @@ const VOICES = {
   },
   otto: {
     skin: 'manga',
+    step: { dx: 0.3, dz: -0.25 },
     poses: ['feel-surprised', 'thinking', 'deal'],
     signature: 'feel-surprised',
     temperature: 0.8,
@@ -71,6 +76,7 @@ const VOICES = {
   },
   lea: {
     skin: 'felttip',
+    step: { dx: 0.4, dz: 0.1 },
     poses: ['dunno', 'eyes-suspicious', 'thinking'],
     signature: 'dunno',
     temperature: 0.55,
@@ -81,6 +87,7 @@ const VOICES = {
   },
   jules: {
     skin: 'stencil',
+    step: { dx: 0.55, dz: -0.2 },
     poses: ['shrug', 'fedup', 'dunno'],
     signature: 'shrug',
     temperature: 0.75,
@@ -196,5 +203,9 @@ export async function speak(who) {
   const say = clean(answer?.say, who);
   if (!say) throw new Error(`${who} got no line back: ${String(content).slice(0, 200)}`);
   const pose = voice.poses.includes(answer?.pose) ? answer.pose : voice.signature;
-  return { say, pose, skin: voice.skin };
+  const reply = { say, pose, skin: voice.skin };
+  // the step is the character's, not the model's: a fixed half-pace in, never a
+  // number the model chose
+  if (voice.step) reply.move = { ...voice.step, over: 1.5 };
+  return reply;
 }

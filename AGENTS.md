@@ -23,8 +23,8 @@ agent-neuron-studio and agent-neuron-viz.
   renderer.
 - **The score is maxcot's.** Emit the syntax maxcot's own parser reads (bars
   and beats, `at` first, one event per line), so a show can leave: it must
-  round-trip through `parseScore`, and a test pins that. `say` and `end` are
-  the stage's two own commands; everything else is maxcot's.
+  round-trip through `parseScore`, and a test pins that. `say`, `end` and `move`
+  are the stage's three own commands; everything else is maxcot's.
 - **Do not invent time.** The film is the run on a linear clock; a run that
   wants air waits for it. Playback speed is the audience's, not the compiler's.
 - **The five answers in `docs/DESIGN.md` §9 are standing rules (accepted

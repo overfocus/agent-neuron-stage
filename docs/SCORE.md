@@ -45,11 +45,12 @@ shape is read too — that is the form a program neuron can answer with.
 | `who` | a maxcot cast name | the actor | recasts it (the design morphs) |
 | `manner` | `{ weight, idle, gaze, rest }` | the actor | how it moves: 0 light and springy, 1 heavy and slow |
 | `set` | a design dial (`"body.w"`), with `to` a number | the actor | one dial; a seek snaps it rather than easing the morph |
+| `move` | `{ x, z }` or `{ dx, dz }`, with `over` in beats | the actor | **the stage's own**: walks there, absolute or a step from where it stands (see *Walking*) |
 | `say` | a line | the speaker | **the stage's own**: the bubble over the speaker's head, or the line under the picture |
 | `end` | `{ card: "logo", text: "DUET" }` | — | **the stage's own**: the end card |
 
 Modifiers, which qualify a command and are never commands themselves: `at`,
-`on`, `to`, `from`, `palette`, `cut`. A command the stage does not know is
+`on`, `to`, `from`, `over`, `palette`, `cut`. A command the stage does not know is
 reported once and ignored; a command it knows with a value it does not is
 dropped (no pose that the rig cannot draw, no skin that does not exist).
 
@@ -121,6 +122,27 @@ old show plays as it did.
 { at: [1, 1], enter: { id: "iris", who: "oldman", x: 1.9, z: 1.7 } } // back: small
 ```
 
+## Walking: how a body crosses the stage
+
+`move` gives a place (`x`, `z`) or a step (`dx`, `dz`), and `over` says how many
+beats the walk takes:
+
+```
+{ at: [2, 1], move: { x: -0.6, z: 1.2 }, over: 2, on: "ann" }   // a place
+{ at: [4, 1], move: { dx: 0.9 }, over: 1.5, on: "ann" }         // a pace from here
+```
+
+maxcot's `Stage` can place a member but not walk one (`place()` sets `x` and `z`
+outright), so the walk is the host's: every frame it stands the member where
+score time says it has got to, eased in and out, and a seek lands in the middle
+of a step rather than at its end. Depth is part of the walk — `z` in the same
+command moves a character into or out of the picture, and its size follows.
+
+Two consequences. Facing is decided when something turns the body, not while it
+walks, so a long walk can leave a body facing the wrong way: set `view.yaw`
+after it. And the camera only moves on a `shot`, so a walk toward the camera
+does not zoom in by itself.
+
 ## Speech: where a line is drawn
 
 `say` puts the line in a bubble over the speaker's head, anchored to the actor's
@@ -144,8 +166,9 @@ An answer's JSON payload may carry, flat or under `stage`:
 | `shot` | `wide`, `full`, `medium`, `close` |
 | `skin` | `skinsByName()` — the look of the character that answered |
 | `palette` | passed through to the skin |
+| `move` | `{ x?, z?, dx?, dz?, over? }`, numbers only: a place in body units, a step of at most 6, `over` 0 to 8 beats |
 
-Anything else is ignored. A payload is never a command list: the six names
+Anything else is ignored. A payload is never a command list: the seven names
 above are the whole vocabulary, and each is validated before it is used.
 
 ## What a trace compiles to

@@ -17,6 +17,7 @@ import goodnight from './08-goodnight.score?raw';
 import unit from './09-unit.score?raw';
 import theWall from './10-the-wall.score?raw';
 import mosaic from './11-mosaic.score?raw';
+import aWalk from './12-a-walk.score?raw';
 
 export interface SceneEntry {
   /** The value in the page's list. */
@@ -45,5 +46,12 @@ export const SCENES: SceneEntry[] = [
     note: 'eight of them, eight skins, one picture',
     actors: 8,
     text: mosaic
+  },
+  {
+    key: 'a-walk',
+    title: 'a walk',
+    note: 'three of them, and the whole scene is distance',
+    actors: 3,
+    text: aWalk
   }
 ];

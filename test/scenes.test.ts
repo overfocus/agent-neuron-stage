@@ -1,4 +1,4 @@
-// The scene book is ten hand-written shows, and a score that stops parsing is a
+// The scene book is twelve hand-written shows, and a score that stops parsing is a
 // page that stops working: every file is read here, played through the same
 // reader the page uses, and held to what its author said it was.
 import { readdirSync, readFileSync } from 'node:fs';

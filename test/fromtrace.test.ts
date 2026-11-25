@@ -94,7 +94,7 @@ describe('compileTrace', () => {
       const ids = new Set(show.actors.map((a) => a.id));
       for (const e of show.events) {
         for (const [cmd, value] of Object.entries(e)) {
-          if (cmd === 'at' || cmd === 'on' || cmd === 'to') continue; // modifiers qualify a command
+          if (cmd === 'at' || cmd === 'on' || cmd === 'to' || cmd === 'over') continue; // modifiers qualify a command
           expect(COMMANDS as readonly string[]).toContain(cmd);
           if (cmd === 'pose') expect(POSES).toHaveProperty(value as string);
           if (cmd === 'look' || cmd === 'shot' || cmd === 'manner') {
@@ -194,6 +194,16 @@ describe('cueOf: a payload may direct its own performance', () => {
 
   it('reads the same fields flat, so a program need not nest them', () => {
     expect(cueOf({ say: 'a line', pose: 'deal' }, ids)).toEqual({ say: 'a line', pose: 'deal' });
+  });
+
+  it('reads a walk: a place or a step, over a number of beats, numbers only', () => {
+    expect(cueOf({ move: { x: 1.5, z: -0.4, over: 2 } }, ids)).toEqual({ move: { x: 1.5, z: -0.4, over: 2 } });
+    expect(cueOf({ stage: { move: { dx: -0.5 } } }, ids)).toEqual({ move: { dx: -0.5 } });
+    // a payload cannot walk off the stage, nor walk for an hour
+    expect(cueOf({ move: { dx: 99, over: 99 } }, ids)).toEqual({ move: { dx: 6, over: 8 } });
+    // and a move that is not numbers, or says nothing, is no move at all
+    expect(cueOf({ move: { x: 'far' } }, ids)).toEqual({});
+    expect(cueOf({ move: { over: 3 } }, ids)).toEqual({});
   });
 
   it('ignores anything else: a payload is data, not a script', () => {

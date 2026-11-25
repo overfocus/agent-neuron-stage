@@ -171,6 +171,39 @@ describe('ShowHost', () => {
     expect(host.stage.get('kid').design['view.yaw']).toBeCloseTo(-0.38, 5);
   });
 
+  it('walks a member where the score says, and lands mid-step on a seek', () => {
+    const unknown: string[] = [];
+    const walking = parseShow(`{
+      title: 'walk', bpm: 60,
+      events: [
+        { at: [1, 1], enter: { id: 'a', who: 'max', x: -2, z: 0 } },
+        { at: [1, 2], move: { x: 2, z: 1 }, over: 2, on: 'a' },
+      ],
+    }`);
+    const host = new ShowHost(fakeCanvas(), walking, { onUnknown: (cmd) => unknown.push(cmd) });
+    // one beat a second: the walk runs from 1s to 3s, eased
+    host.seek(0.5);
+    expect(host.stage.member('a').x).toBe(-2);
+    host.seek(2);
+    expect(host.stage.member('a').x).toBeCloseTo(0, 6); // half way, half eased
+    expect(host.stage.member('a').z).toBeCloseTo(0.5, 6);
+    host.seek(4);
+    expect(host.stage.member('a').x).toBe(2);
+    expect(host.stage.member('a').z).toBe(1);
+    // a step is from where the body stands, and a walk is a command the stage knows
+    const stepping = parseShow(`{
+      title: 'step', bpm: 60,
+      events: [
+        { at: [1, 1], enter: { id: 'a', who: 'max', x: -2 } },
+        { at: [1, 2], move: { dx: 1.5 }, over: 1, on: 'a' },
+      ],
+    }`);
+    const other = new ShowHost(fakeCanvas(), stepping, { onUnknown: (cmd) => unknown.push(cmd) });
+    other.seek(3);
+    expect(other.stage.member('a').x).toBeCloseTo(-0.5, 6);
+    expect(unknown).toEqual([]);
+  });
+
   it('draws the trace’s depth: a near figure bigger and higher than a far one', () => {
     const riemann = compileTrace(parseTrace(riemannJson));
     const host = new ShowHost(fakeCanvas(960, 600), riemann);

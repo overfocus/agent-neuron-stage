@@ -56,6 +56,16 @@ describe('the riemann table', () => {
     expect(trace.events.some((e) => e.type === 'drop' && e.reason === 'hops' && e.neuron === 'ada')).toBe(true);
   });
 
+  it('walks each speaker half a pace toward the table as it answers', () => {
+    const moves = show.events.filter((e) => e.move !== undefined);
+    expect(moves.map((e) => e.on)).toEqual(ORDER);
+    for (const move of moves) {
+      expect(move.over, `${move.on} takes a beat and a half`).toBe(1.5);
+      const step = move.move as { dx?: number; dz?: number };
+      expect(typeof step.dx === 'number' || typeof step.dz === 'number').toBe(true);
+    }
+  });
+
   it('draws every one of the seven with a line and a face', () => {
     const said = new Set(show.events.filter((e) => typeof e.say === 'string').map((e) => e.on));
     for (const id of ['cue', ...ORDER]) expect(said.has(id), `a line for ${id}`).toBe(true);
