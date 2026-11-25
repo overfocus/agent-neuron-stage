@@ -61,6 +61,11 @@ walk (`scenes/12-a-walk.score`; `n` and `p` step through them).
 - **cast**: every neuron as an actor, with the maxcot actor that plays it, its
   kind, its weight and its line of description. Click a row, or a character on
   the stage.
+- **net**: the run before it became a film — each neuron a dot where the network
+  file put it, each link an arrow, and underneath, the mind every one of them
+  talks to. For **the lab** that badge is the model (`glm-5.3-flash:cloud`); a
+  trace does not record which model a program called, so a loaded file says so
+  instead of guessing.
 - **score**: the show as a maxcot score, which is the record of the
   compilation. It is what `node scripts/score.mjs <trace.json>` prints to
   stdout, and maxcot's own studio plays it.
@@ -175,6 +180,7 @@ to a named bar and beat, and shoots the canvas.
 |---|---|
 | `src/trace.ts` | reads an agent-neuron trace (format v1), tolerantly |
 | `src/cast.ts` | the header as a cast: actor, manner, place, from the links |
+| `src/netchart.ts` | the network as a drawing: neuron dots, link arrows, and the mind they talk to |
 | `src/bubble.ts` | where a speech bubble goes: above the head, inside the frame, tail on it |
 | `src/bubbles.ts` | the bubble itself, as page text over the canvas |
 | `src/fromtrace.ts` | the compiler: trace → show, and the cue protocol |

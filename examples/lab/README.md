@@ -20,7 +20,9 @@ sh scripts/run-lab.sh            # check + run, writes src/traces/lab.json
 ```
 
 The page lists it under **a run, compiled**: eight actors (the cue asks), seven
-of them in their own skins, in a room that has depth.
+of them in their own skins, in a room that has depth. Its **net** pane draws the
+mesh - every neuron where the file puts it, every link an arrow - with one badge
+under the room for the model all seven ask: `glm-5.3-flash:cloud`.
 
 ## The room
 

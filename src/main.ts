@@ -11,6 +11,7 @@ import { parseShow } from './fromscore.ts';
 import { formatScore, type Show } from './show.ts';
 import { ShowHost } from './host.ts';
 import { Bubbles } from './bubbles.ts';
+import { netOf } from './netchart.ts';
 import { eventType, parseTrace, payloadLine, type Trace } from './trace.ts';
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -37,6 +38,8 @@ interface Loaded {
   show: Show;
   /** Present when the show came from a run: the events pane reads the trace. */
   trace?: Trace;
+  /** What the neurons' minds are, when the page knows (a network's file does not say). */
+  via?: string;
   label: string;
 }
 
@@ -70,9 +73,9 @@ function showLine(who: string, text: string): void {
   caption.classList.add('said');
 }
 
-function showOf(trace: Trace, label: string, skin?: string): Loaded {
+function showOf(trace: Trace, label: string, skin?: string, via?: string): Loaded {
   const show = compileTrace(trace, { title: trace.demo, skin });
-  return { show, trace, label };
+  return { show, trace, label, via };
 }
 
 function load(next: Loaded): void {
@@ -90,6 +93,7 @@ function paint(): void {
   scrub.max = String(host.total || 1);
   scrub.value = '0';
   paintCast(show);
+  paintNet();
   $('pane-score').textContent = formatScore(show, [
     `${show.title} — ${show.note}`,
     'this is a maxcot score: the same file plays in maxcot\'s own studio'
@@ -131,6 +135,122 @@ function paintCast(show: Show): void {
     row.addEventListener('click', () => select(actor.id));
     pane.append(row);
   }
+}
+
+/**
+ * The network pane: what the run was before it became a film. Each neuron is a
+ * dot where the network file put it, each link an arrow, and the mind every
+ * neuron but the source talks to is a badge underneath - the model, when the
+ * page knows which one (a trace records what happened, not which model a
+ * program called).
+ */
+function paintNet(): void {
+  const pane = $('pane-net');
+  pane.textContent = '';
+  const note = document.createElement('p');
+  note.className = 'net-note';
+  if (!loaded.trace) {
+    note.textContent = "a score has no network: its cast is the file's own";
+    pane.append(note);
+    return;
+  }
+  const chart = netOf(loaded.trace, { via: loaded.via });
+  const NS = 'http://www.w3.org/2000/svg';
+  const W = 340;
+  const H = 300;
+  const pad = 10;
+  const at = (x: number, y: number) => ({ x: pad + x * (W - pad * 2), y: pad + y * (H - pad * 2) });
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('class', 'net-svg');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', `the network of ${loaded.show.title}: ${chart.nodes.length} neurons, ${chart.edges.length} links`);
+  const defs = document.createElementNS(NS, 'defs');
+  defs.innerHTML =
+    '<marker id="net-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">' +
+    '<path d="M0,0 L8,4 L0,8 z" fill="#5f6878"/></marker>';
+  svg.append(defs);
+
+  const colour = (kind: string): string =>
+    kind === 'source' ? '#7fd1c1' : kind === 'composed' ? '#b48cff' : kind === 'human' ? '#6fd08c' : '#79a7ff';
+  const radius = (kind: string): number => (kind === 'source' ? 5.5 : 7);
+  const place = new Map(chart.nodes.map((n) => [n.id, at(n.x, n.y)]));
+
+  /** A line between two dots, stopping at each edge so the arrow shows. */
+  const line = (from: { x: number; y: number }, to: { x: number; y: number }, fromR: number, toR: number, cls: string, arrow: boolean): SVGLineElement => {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const el = document.createElementNS(NS, 'line');
+    el.setAttribute('x1', String(from.x + (dx / len) * (fromR + 2)));
+    el.setAttribute('y1', String(from.y + (dy / len) * (fromR + 2)));
+    el.setAttribute('x2', String(to.x - (dx / len) * (toR + 3)));
+    el.setAttribute('y2', String(to.y - (dy / len) * (toR + 3)));
+    el.setAttribute('class', cls);
+    if (arrow) el.setAttribute('marker-end', 'url(#net-arrow)');
+    return el;
+  };
+
+  // the mind first, so the links are drawn over it
+  if (chart.mind) {
+    const m = at(chart.mind.x, chart.mind.y);
+    const width = Math.max(130, chart.mind.label.length * 5.3 + 22);
+    for (const id of chart.mind.to) {
+      const node = chart.nodes.find((n) => n.id === id)!;
+      const p = place.get(id)!;
+      svg.append(line(p, { x: m.x, y: m.y - 10 }, radius(node.kind), 0, 'net-edge net-ask', false));
+    }
+    const box = document.createElementNS(NS, 'g');
+    box.setAttribute('class', 'net-mind');
+    const rect = document.createElementNS(NS, 'rect');
+    rect.setAttribute('x', String(m.x - width / 2));
+    rect.setAttribute('y', String(m.y - 10));
+    rect.setAttribute('width', String(width));
+    rect.setAttribute('height', '20');
+    rect.setAttribute('rx', '10');
+    const text = document.createElementNS(NS, 'text');
+    text.setAttribute('x', String(m.x));
+    text.setAttribute('y', String(m.y + 3.5));
+    text.textContent = chart.mind.label;
+    box.append(rect, text);
+    svg.append(box);
+  }
+
+  for (const edge of chart.edges) {
+    const from = place.get(edge.from);
+    const to = place.get(edge.to);
+    if (!from || !to) continue;
+    const a = chart.nodes.find((n) => n.id === edge.from)!;
+    const b = chart.nodes.find((n) => n.id === edge.to)!;
+    svg.append(line(from, to, radius(a.kind), radius(b.kind), 'net-edge', true));
+  }
+
+  for (const node of chart.nodes) {
+    const p = place.get(node.id)!;
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', `net-node ${node.kind}`);
+    const dot = document.createElementNS(NS, 'circle');
+    dot.setAttribute('cx', String(p.x));
+    dot.setAttribute('cy', String(p.y));
+    dot.setAttribute('r', String(radius(node.kind)));
+    dot.setAttribute('fill', colour(node.kind));
+    const title = document.createElementNS(NS, 'title');
+    title.textContent = `${node.id} · ${node.kind} · ${node.who}${node.placed ? '' : ' · placed by the links'}`;
+    const label = document.createElementNS(NS, 'text');
+    // a label would sit on the mind badge at the foot of the room: put it above instead
+    label.setAttribute('x', String(p.x));
+    label.setAttribute('y', String(node.y > 0.68 ? p.y - 10 : p.y + 15));
+    label.setAttribute('class', 'net-label');
+    label.textContent = node.id;
+    dot.addEventListener('click', () => select(node.id));
+    g.append(title, dot, label);
+    svg.append(g);
+  }
+
+  note.textContent = chart.mind
+    ? `every neuron but the source talks to ${chart.mind.label}`
+    : 'the trace does not say what a neuron’s mind runs — a model is not part of a trace';
+  pane.append(svg, note);
 }
 
 function paintEvents(): void {
@@ -276,13 +396,15 @@ interface Item {
   json?: unknown;
   /** The skin the ground is painted in, when the show is more than one hand. */
   skin?: string;
+  /** What each neuron's mind is: a model, a table, a network. Not in the trace. */
+  via?: string;
 }
 
 const BUNDLED: Item[] = [
   { key: 'duet', group: 'a run, compiled', title: 'duet', note: 'two characters, a real run of examples/duet', json: duetTrace },
   { key: 'alerts', group: 'a run, compiled', title: 'alerts', note: 'a recording of the alert storm (agent-neuron)', json: alertsTrace },
-  { key: 'troupe', group: 'a run, compiled', title: 'troupe', note: 'six characters, six neurons, six skins (examples/troupe)', json: troupeTrace },
-  { key: 'lab', group: 'a run, compiled', title: 'the lab', note: 'seven scientists, no taking turns, a model in each (examples/lab)', json: labTrace, skin: 'stencil' },
+  { key: 'troupe', group: 'a run, compiled', title: 'troupe', note: 'six characters, six neurons, six skins (examples/troupe)', json: troupeTrace, via: 'a table in mind/tell.mjs' },
+  { key: 'lab', group: 'a run, compiled', title: 'the lab', note: 'seven scientists, no taking turns, a model in each (examples/lab)', json: labTrace, skin: 'stencil', via: 'glm-5.3-flash:cloud, a cloud model' },
   { key: 'writer', group: "a network's answer", title: 'writer', note: 'a scene a network wrote (examples/writer)', text: writerScene },
   ...SCENES.map((scene) => ({
     key: `scene:${scene.key}`,
@@ -321,7 +443,7 @@ function loadBundled(key: string): void {
     return;
   }
   const trace = parseTrace(item.json);
-  load({ ...showOf(trace, `${item.title}: ${item.note ?? ''}`.replace(/: $/, ''), item.skin), label: `${item.title}: ${trace.events.length} events` });
+  load({ ...showOf(trace, `${item.title}: ${item.note ?? ''}`.replace(/: $/, ''), item.skin, item.via), label: `${item.title}: ${trace.events.length} events` });
 }
 
 /** The next or previous show in the list, for reading the book straight through. */

@@ -341,3 +341,20 @@ select { max-width: 46ch; }
   .canvas-wrap { flex: none; aspect-ratio: 16 / 9; }
   .panes { max-height: 340px; }
 }
+
+/* ── the network pane ──────────────────────────────────────────────────── */
+.net-svg { width: 100%; height: auto; display: block; }
+.net-edge { stroke: var(--line); stroke-width: 1; }
+.net-edge.net-ask { stroke: var(--dim); stroke-width: 1; stroke-dasharray: 2 4; opacity: .8; }
+.net-node circle { stroke: #0f1219; stroke-width: 1.5; cursor: pointer; }
+.net-node:hover circle { stroke: var(--accent); }
+.net-label {
+  fill: var(--ink);
+  font-size: 9px;
+  font-family: inherit;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.net-mind rect { fill: var(--panel-2); stroke: var(--dim); stroke-dasharray: 4 3; }
+.net-mind text { fill: var(--ink); font-size: 9px; font-family: inherit; text-anchor: middle; }
+.net-note { color: var(--dim); font-size: 11px; line-height: 1.5; margin: 10px 0 0; }
