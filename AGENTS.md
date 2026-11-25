@@ -36,6 +36,10 @@ agent-neuron-studio and agent-neuron-viz.
   needs a grudge). Do not build ahead of those triggers.
 - `vendor/maxcot/` is upstream, unmodified, MIT. A fix belongs upstream; to
   re-pin, see `vendor/VENDORED.md`.
+- `spikes/` is throwaway: a question, a built page or probe, a verdict in its
+  README. `vite build` does not see it, `tsc` does, and nothing in `src/` may
+  import from it. When a spike's verdict is adopted, the code that ships is
+  written in `src/` with tests — the spike stays as the record of why.
 - Relative imports carry their extension (`.ts`).
 - Tests use made-up data and the two committed traces; a test writes only
   inside a temporary directory. A fixture that is a real trace is copied, never

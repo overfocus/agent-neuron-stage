@@ -80,6 +80,7 @@ debug build next to this repo. The trace committed here was written by
 | `src/main.ts` | the page: canvases, transport, panes, file input |
 | `examples/duet/` | the two-character network, its minds, its inputs |
 | `examples/writer/` | one program that answers a whole scene, and the scene it answered |
+| `spikes/` | throwaway experiments with a verdict: facing, speech bubbles |
 | `vendor/maxcot/` | maxcot's library, unmodified, MIT (see `vendor/VENDORED.md`) |
 
 ## Check

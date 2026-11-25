@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>spike 001 — facing</title>
+    <style>
+      :root { --bg: #101218; --panel: #171a22; --line: #262c38; --ink: #e7e9ef; --dim: #8d95a8; --accent: #e7b25c; --mono: ui-monospace, Menlo, monospace; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 13px/1.5 var(--mono); }
+      main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; padding: 14px; height: 100vh; }
+      .stage { position: relative; display: grid; place-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      canvas { display: block; width: 100%; height: auto; }
+      aside { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+      h1 { font-size: 13px; margin: 0; font-weight: 600; }
+      h1 span { color: var(--accent); }
+      p { margin: 0; color: var(--dim); }
+      fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 0; }
+      legend { color: var(--dim); padding: 0 4px; }
+      label { display: block; padding: 2px 0; cursor: pointer; }
+      input[type='range'] { width: 100%; accent-color: var(--accent); }
+      table { border-collapse: collapse; width: 100%; font-size: 12px; }
+      td, th { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+      th { color: var(--dim); font-weight: 400; }
+      .yes { color: #74c69d; }
+      .no { color: #e2705f; }
+      code { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="stage"><canvas id="stage" width="960" height="600"></canvas></div>
+      <aside>
+        <h1>spike 001 — <span>facing each other</span></h1>
+        <p>Two actors, one link each way. What the stage draws is measured on the right.</p>
+        <fieldset>
+          <legend>variant</legend>
+          <label><input type="radio" name="v" value="asis" checked /> as it is (no look)</label>
+          <label><input type="radio" name="v" value="look" /> <code>look()</code>, as maxcot does it</label>
+          <label><input type="radio" name="v" value="face" /> <code>view.yaw</code> by side (facing)</label>
+          <label><input type="radio" name="v" value="both" /> facing + <code>look()</code></label>
+        </fieldset>
+        <fieldset>
+          <legend>yaw to turn, in radians</legend>
+          <input id="yaw" type="range" min="0" max="0.9" step="0.02" value="0.38" />
+        </fieldset>
+        <fieldset>
+          <legend>what the rig got</legend>
+          <table id="readout"></table>
+          <p id="verdict" style="margin-top: 6px"></p>
+        </fieldset>
+      </aside>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

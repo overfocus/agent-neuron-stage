@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>spike 002 — speech bubbles</title>
+    <style>
+      :root { --bg: #101218; --panel: #171a22; --line: #262c38; --ink: #e7e9ef; --dim: #8d95a8; --accent: #e7b25c; --mono: ui-monospace, Menlo, monospace; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 13px/1.5 var(--mono); }
+      main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; padding: 14px; height: 100vh; }
+      .stage { position: relative; display: grid; place-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      canvas { display: block; width: 100%; height: auto; }
+      .bubbles { position: absolute; inset: 0; pointer-events: none; }
+      aside { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: auto; }
+      h1 { font-size: 13px; margin: 0; font-weight: 600; }
+      h1 span { color: var(--accent); }
+      p { margin: 0; color: var(--dim); }
+      fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 0; }
+      legend { color: var(--dim); padding: 0 4px; }
+      label { display: block; padding: 2px 0; cursor: pointer; }
+      button, select, input[type='text'] {
+        font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+        border-radius: 6px; padding: 5px 8px;
+      }
+      button { cursor: pointer; }
+      input[type='text'] { width: 100%; }
+      .row { display: flex; gap: 6px; }
+      table { border-collapse: collapse; width: 100%; font-size: 12px; }
+      td, th { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+      th { color: var(--dim); font-weight: 400; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="stage">
+        <canvas id="stage" width="960" height="600"></canvas>
+        <div id="bubbles" class="bubbles"></div>
+      </div>
+      <aside>
+        <h1>spike 002 — <span>speech bubbles</span></h1>
+        <p>A bubble is anchored to the speaker's head, which the merged scene gives in canvas pixels. It must follow the camera.</p>
+        <fieldset>
+          <legend>who speaks</legend>
+          <div class="row" style="margin-bottom: 6px">
+            <input id="line" type="text" value="You always say that." />
+          </div>
+          <div class="row">
+            <button id="say-left">left says</button>
+            <button id="say-right">right says</button>
+            <button id="clear">clear</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>camera</legend>
+          <select id="shot">
+            <option value="wide">wide</option>
+            <option value="full-left">full on left</option>
+            <option value="close-left">close on left</option>
+            <option value="full-right">full on right</option>
+          </select>
+        </fieldset>
+        <fieldset>
+          <legend>renderer</legend>
+          <label><input type="radio" name="r" value="dom" checked /> DOM (a div over the canvas)</label>
+          <label><input type="radio" name="r" value="canvas" /> canvas (drawn after the stage)</label>
+        </fieldset>
+        <fieldset>
+          <legend>readout</legend>
+          <table id="readout"></table>
+        </fieldset>
+      </aside>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
