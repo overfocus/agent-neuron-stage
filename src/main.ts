@@ -52,7 +52,7 @@ function load(next: Loaded): void {
 
 function paint(): void {
   const show = loaded.show;
-  meta.textContent = `${show.actors.length} actors · ${show.events.length} events · ${show.bpm} bpm`;
+  meta.textContent = `${show.actors.length} actors · ${show.events.length} score events · ${show.bpm} bpm`;
   scrub.max = String(host.total || 1);
   scrub.value = '0';
   paintCast(show);
