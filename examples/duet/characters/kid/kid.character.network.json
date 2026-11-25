@@ -1,0 +1,31 @@
+{
+  "version": 0,
+  "name": "kid-mind",
+  "description": "The kid's mind: the same three neurons as Max's, with her own feelings and her own lines. A character is a network; changing the folder changes the character.",
+  "entry": "hear",
+  "exit": "speak",
+  "neurons": [
+    {
+      "id": "hear",
+      "run": ["node", "mind/hear.mjs"],
+      "description": "Keeps the words she just heard (the cue's line, or Max's answer) as { heard }."
+    },
+    {
+      "id": "feel",
+      "run": ["node", "mind/feel.mjs"],
+      "description": "Decides what the words did to her: stung, warm or steady."
+    },
+    {
+      "id": "speak",
+      "run": ["node", "mind/speak.mjs"],
+      "threshold": 2,
+      "within": 5000,
+      "description": "Answers once she has both the words and the feeling; { say, pose } - her line and her face."
+    }
+  ],
+  "links": [
+    { "from": "hear", "to": "feel" },
+    { "from": "hear", "to": "speak" },
+    { "from": "feel", "to": "speak" }
+  ]
+}

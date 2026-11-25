@@ -1,0 +1,282 @@
+// main.ts: the page. Load a show (a trace, compiled; or a score, played as it
+// is), watch it, scrub it, read what the compiler made of it.
+import duetTrace from './traces/duet.json';
+import alertsTrace from './traces/alerts.json';
+import { compileTrace } from './fromtrace.ts';
+import { parseShow } from './fromscore.ts';
+import { formatScore, type Show } from './show.ts';
+import { ShowHost } from './host.ts';
+import { eventType, parseTrace, payloadLine, type Trace } from './trace.ts';
+
+const $ = <T extends HTMLElement>(id: string): T => {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`the page is missing #${id}`);
+  return el as T;
+};
+
+const canvas = $<HTMLCanvasElement>('stage');
+const caption = $('caption');
+const card = $('card');
+const playButton = $<HTMLButtonElement>('play');
+const scrub = $<HTMLInputElement>('scrub');
+const clock = $('clock');
+const meta = $('meta');
+const picker = $<HTMLSelectElement>('show');
+const file = $<HTMLInputElement>('file');
+const source = $('source');
+const speed = $<HTMLSelectElement>('speed');
+
+interface Loaded {
+  show: Show;
+  /** Present when the show came from a run: the events pane reads the trace. */
+  trace?: Trace;
+  label: string;
+}
+
+let host: ShowHost;
+let loaded: Loaded;
+let selected = '';
+
+function showOf(trace: Trace, label: string): Loaded {
+  const show = compileTrace(trace, { title: trace.demo });
+  return { show, trace, label };
+}
+
+function load(next: Loaded): void {
+  loaded = next;
+  if (host) host.load(next.show);
+  paint();
+  source.textContent = next.label;
+  setStatus('');
+}
+
+function paint(): void {
+  const show = loaded.show;
+  meta.textContent = `${show.actors.length} actors · ${show.events.length} events · ${show.bpm} bpm`;
+  scrub.max = String(host.total || 1);
+  scrub.value = '0';
+  paintCast(show);
+  $('pane-score').textContent = formatScore(show, [
+    `${show.title} — ${show.note}`,
+    'this is a maxcot score: the same file plays in maxcot\'s own studio'
+  ]);
+  paintEvents();
+  $('caption').classList.remove('said');
+  caption.textContent = '';
+  card.hidden = true;
+}
+
+function paintCast(show: Show): void {
+  const pane = $('pane-cast');
+  pane.textContent = '';
+  for (const actor of show.actors) {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'cast-row' + (actor.id === selected ? ' on' : '');
+    row.dataset.actor = actor.id;
+    row.innerHTML = '';
+    const name = document.createElement('span');
+    name.className = 'cast-id';
+    name.textContent = actor.id;
+    const kind = document.createElement('span');
+    kind.className = 'cast-kind';
+    kind.textContent = actor.kind;
+    const play = document.createElement('span');
+    play.className = 'cast-who';
+    play.textContent = `${actor.who} · ${actor.weight.toFixed(2)}`;
+    row.append(name, kind, play);
+    if (actor.note) {
+      const note = document.createElement('span');
+      note.className = 'cast-note';
+      note.textContent = actor.note;
+      row.append(note);
+    }
+    row.addEventListener('click', () => select(actor.id));
+    pane.append(row);
+  }
+}
+
+function paintEvents(): void {
+  const pane = $('pane-events');
+  pane.textContent = '';
+  if (!loaded.trace) {
+    for (const e of loaded.show.events) {
+      const row = document.createElement('div');
+      row.className = 'event';
+      const at = `${e.at[0]}.${Number(e.at[1].toFixed(2))}`;
+      const cmds = Object.entries(e)
+        .filter(([k]) => k !== 'at')
+        .map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
+        .join(' · ');
+      row.innerHTML = `<span class="t">${at}</span><span class="what">${escapeHtml(cmds)}</span>`;
+      pane.append(row);
+    }
+    return;
+  }
+  for (const e of loaded.trace.events) {
+    const type = eventType(e);
+    const row = document.createElement('div');
+    row.className = `event ${type}`;
+    const to = e.to.length ? ' → ' + e.to.join(', ') : '';
+    const who = e.from ?? e.neuron ?? 'run';
+    const line = payloadLine(e.payload) ?? (e.reason ?? e.message ?? '');
+    row.innerHTML =
+      `<span class="t">${e.t}ms</span>` +
+      `<span class="what"><b>${escapeHtml(type)}</b> ${escapeHtml(who)}${escapeHtml(to)}` +
+      (line ? `<em>${escapeHtml(line)}</em>` : '') +
+      '</span>';
+    pane.append(row);
+  }
+}
+
+function select(id: string): void {
+  selected = id;
+  for (const row of document.querySelectorAll<HTMLElement>('.cast-row')) {
+    row.classList.toggle('on', row.dataset.actor === id);
+  }
+}
+
+function setStatus(text: string): void {
+  source.textContent = text || (loaded ? loaded.label : '');
+  source.classList.toggle('bad', !!text);
+}
+
+// ── a click on the stage finds the character ──────────────────────────────
+canvas.addEventListener('click', (event) => {
+  const box = canvas.getBoundingClientRect();
+  const x = ((event.clientX - box.left) / box.width) * canvas.width;
+  const y = ((event.clientY - box.top) / box.height) * canvas.height;
+  const id = host.pick(x, y);
+  if (id) select(id);
+});
+
+// ── transport ─────────────────────────────────────────────────────────────
+playButton.addEventListener('click', () => host.toggle());
+scrub.addEventListener('input', () => host.seek(Number(scrub.value)));
+speed.addEventListener('change', () => {
+  host.speed = Number(speed.value) || 1;
+});
+window.addEventListener('keydown', (event) => {
+  if (event.target instanceof HTMLInputElement && event.target.type === 'file') return;
+  if (event.code === 'Space') {
+    event.preventDefault();
+    host.toggle();
+  }
+});
+
+// ── panes ─────────────────────────────────────────────────────────────────
+for (const tab of document.querySelectorAll<HTMLButtonElement>('.tabs button')) {
+  tab.addEventListener('click', () => {
+    const name = tab.dataset.pane;
+    for (const other of document.querySelectorAll<HTMLButtonElement>('.tabs button')) {
+      other.setAttribute('aria-selected', String(other === tab));
+    }
+    for (const pane of document.querySelectorAll<HTMLElement>('.pane')) {
+      pane.classList.toggle('on', pane.id === `pane-${name}`);
+    }
+  });
+}
+
+// ── opening a file: a trace compiles, a score plays ───────────────────────
+file.addEventListener('change', async () => {
+  const picked = file.files?.[0];
+  if (!picked) return;
+  try {
+    const text = await picked.text();
+    if (/\.json$/i.test(picked.name)) {
+      const trace = parseTrace(JSON.parse(text));
+      selected = '';
+      load({ ...showOf(trace, trace.demo), label: `${picked.name}: a trace of ${trace.demo}, compiled` });
+    } else {
+      const show = parseShow(text, { title: picked.name.replace(/\.[^.]+$/, '') });
+      selected = '';
+      load({ show, label: `${picked.name}: a score, played as it is` });
+    }
+    host.play();
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : String(error));
+  } finally {
+    file.value = '';
+  }
+});
+
+// ── the stage's own canvas size: fill the box, keep 16:9 ──────────────────
+function fit(): void {
+  const wrap = canvas.parentElement;
+  if (!wrap) return;
+  const ratio = 16 / 9;
+  let width = wrap.clientWidth;
+  let height = width / ratio;
+  if (height > wrap.clientHeight) {
+    height = wrap.clientHeight;
+    width = height * ratio;
+  }
+  width = Math.max(320, Math.floor(width));
+  height = Math.max(180, Math.floor(width / ratio));
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  if (host) host.stage.dirty = true;
+}
+window.addEventListener('resize', fit);
+new ResizeObserver(fit).observe(canvas.parentElement ?? document.body);
+
+// ── boot ──────────────────────────────────────────────────────────────────
+const BUNDLED = [
+  { key: 'duet', label: 'duet — two characters, a real run of examples/duet', json: duetTrace },
+  { key: 'alerts', label: 'alerts — a recording of the alert storm (agent-neuron)', json: alertsTrace }
+];
+for (const item of BUNDLED) {
+  const option = document.createElement('option');
+  option.value = item.key;
+  option.textContent = item.label;
+  picker.append(option);
+}
+
+function loadBundled(key: string): void {
+  const item = BUNDLED.find((b) => b.key === key) ?? BUNDLED[0]!;
+  const trace = parseTrace(item.json);
+  selected = '';
+  load({ ...showOf(trace, item.label), label: `${item.label}: ${trace.events.length} events` });
+}
+
+picker.addEventListener('change', () => loadBundled(picker.value));
+
+const first = parseTrace(BUNDLED[0]!.json);
+host = new ShowHost(canvas, compileTrace(first, { title: first.demo }), {
+  onLine(who, text) {
+    caption.classList.toggle('said', !!text);
+    caption.innerHTML = text ? `<b>${escapeHtml(who)}</b>${escapeHtml(text)}` : '';
+    if (who) select(who);
+  },
+  onCard(text) {
+    card.hidden = !text;
+    card.textContent = text ?? '';
+  },
+  onFrame(bar, beat, seconds) {
+    clock.textContent = `${bar}.${Number(beat.toFixed(2))} · ${seconds.toFixed(1)}s`;
+  },
+  onUnknown(cmd) {
+    console.info(`[stage] the score used "${cmd}", which this stage does not draw; ignored`);
+  }
+});
+fit();
+loadBundled('duet');
+
+let previous = performance.now();
+function loop(now: number): void {
+  const dt = Math.min(0.1, Math.max(0, (now - previous) / 1000));
+  previous = now;
+  host.tick(dt);
+  playButton.textContent = host.playing ? '❚❚' : '▶';
+  playButton.setAttribute('aria-label', host.playing ? 'pause' : 'play');
+  if (host.playing) scrub.value = String(host.time);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
+}

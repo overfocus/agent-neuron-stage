@@ -1,0 +1,125 @@
+// fromscore.ts: the other way in. A score is a show already - maxcot's syntax
+// (comments, unquoted keys, single quotes, trailing commas; never evaluated) or
+// the same document as JSON, which is what a network can answer with.
+//
+// The cast comes from the score itself: `enter` and `create` are the only two
+// commands that put an actor on the stage, so a score declares its characters
+// the way a network file declares its neurons.
+import { parseScore } from 'maxcot/score';
+import type { ScoreEvent } from 'maxcot/score';
+import type { Show, ShowActor } from './show.ts';
+
+export interface ScoreOptions {
+  title?: string;
+  note?: string;
+  skin?: string;
+  bpm?: number;
+}
+
+interface ScoreDocument {
+  title?: string;
+  bpm?: number;
+  beatsPerBar?: number;
+  tail?: number;
+  events: ScoreEvent[];
+}
+
+/** Read a score from text: JSON first (what a program answers), then maxcot's own syntax. */
+export function parseShow(text: string, o: ScoreOptions = {}): Show {
+  const doc = readDocument(text);
+  const actors: ShowActor[] = [];
+  const index = new Map<string, ShowActor>();
+  const place = (id: string, who?: string, x?: number, z?: number): ShowActor => {
+    const seen = index.get(id);
+    if (seen) {
+      if (who) seen.who = who;
+      if (x != null) seen.x = x;
+      if (z != null) seen.z = z;
+      return seen;
+    }
+    const actor: ShowActor = {
+      id,
+      who: who || id,
+      x: x ?? Number.NaN,
+      z: z ?? 0,
+      weight: 0.5,
+      idle: 'still',
+      kind: 'run',
+      note: ''
+    };
+    actors.push(actor);
+    index.set(id, actor);
+    return actor;
+  };
+
+  for (const e of doc.events) {
+    const enter = e.enter;
+    if (typeof enter === 'string') place(enter);
+    else if (enter && typeof enter === 'object') {
+      const v = enter as Record<string, unknown>;
+      const id = typeof v.id === 'string' ? v.id : typeof v.who === 'string' ? v.who : undefined;
+      if (id) place(id, str(v.who), num(v.x), num(v.z));
+    }
+    if (typeof e.create === 'string') place(e.create);
+    if (typeof e.exit === 'string') {
+      const gone = index.get(e.exit);
+      if (gone) {
+        index.delete(e.exit);
+        actors.splice(actors.indexOf(gone), 1);
+      }
+    }
+    if (e.manner && typeof e.manner === 'object' && typeof e.on === 'string') {
+      const actor = index.get(e.on);
+      const m = e.manner as Record<string, unknown>;
+      if (actor) {
+        if (typeof m.weight === 'number') actor.weight = m.weight;
+        if (typeof m.idle === 'string') actor.idle = m.idle;
+      }
+    }
+    if (e.who && typeof e.who === 'string' && typeof e.on === 'string') {
+      const actor = index.get(e.on);
+      if (actor) actor.who = e.who;
+    }
+  }
+
+  // A score that never says where an actor stands gets an even line.
+  const loose = actors.filter((a) => Number.isNaN(a.x));
+  loose.forEach((a, i) => {
+    a.x = (i - (loose.length - 1) / 2) * 1.9;
+  });
+
+  const styles = doc.events.filter((e) => typeof e.style === 'string');
+  const lastStyle = styles[styles.length - 1];
+  return {
+    title: doc.title ?? o.title ?? 'a score',
+    note: o.note ?? `a score of ${doc.events.length} events`,
+    bpm: doc.bpm ?? o.bpm ?? 100,
+    beatsPerBar: doc.beatsPerBar ?? 4,
+    skin: (lastStyle?.style as string) ?? o.skin ?? 'pencil',
+    tail: doc.tail ?? 3,
+    actors,
+    events: doc.events
+  };
+}
+
+function readDocument(text: string): ScoreDocument {
+  const trimmed = text.trim();
+  if (trimmed.startsWith('{')) {
+    try {
+      const json = JSON.parse(trimmed) as ScoreDocument;
+      if (json && Array.isArray(json.events)) return json;
+    } catch {
+      // not JSON: fall through to the score syntax, which is the point of it
+    }
+  }
+  const result = parseScore(text);
+  if (!result.ok) throw new Error(`line ${result.error.line}, column ${result.error.col}: ${result.error.message}`);
+  return result.score;
+}
+
+function str(v: unknown): string | undefined {
+  return typeof v === 'string' ? v : undefined;
+}
+function num(v: unknown): number | undefined {
+  return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+}

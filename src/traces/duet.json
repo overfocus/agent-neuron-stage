@@ -1,0 +1,47 @@
+{
+  "format": "agent-neuron-trace",
+  "version": 1,
+  "demo": "duet",
+  "description": "Two characters meet on a stage. Each is a network of its own (max, kid), sealed behind one answer; the cue is the line both hear; each character's answer is sent to the other, and the exchange ends where maxHops 3 stops it. Run it and the trace is a film.",
+  "library": "0.0.0",
+  "engine": "agent-neuron-rust",
+  "ids": {"signal":"run-numbered","trace":"run-numbered"},
+  "neurons": [
+    {"id":"cue","kind":"source","description":"The line that starts the scene: whoever holds the stage says it, and both characters hear it at once."},
+    {"id":"max","kind":"composed","description":"Max, dry and unhurried: a character is a network of its own (hear, feel, speak), and from the stage it is one body with one voice.","options":{"maxHops":3}},
+    {"id":"kid","kind":"composed","description":"The kid, bright and quick to take offence: a second character network, the same three-neuron mind with its own lines.","options":{"maxHops":3}}
+  ],
+  "links": [
+    {"from":"cue","to":"max"},
+    {"from":"cue","to":"kid"},
+    {"from":"max","to":"kid"},
+    {"from":"kid","to":"max"}
+  ],
+  "events": [
+    {"type":"signal","t":0,"id":"1","from":"cue","to":["max","kid"],"trace":"1","hops":0,"payload":{"type":"text","text":"You're late."}},
+    {"type":"answer","t":588,"id":"12","from":"kid","to":["cue"],"trace":"1","replyTo":"1","hops":1,"payload":{"type":"json","data":{"say":"You always say that.","pose":"feel-sulking"}}},
+    {"type":"signal","t":588,"id":"13","from":"kid","to":["max"],"trace":"1","cause":"12","hops":2,"payload":{"type":"json","data":{"say":"You always say that.","pose":"feel-sulking"}}},
+    {"type":"answer","t":691,"id":"15","from":"max","to":["cue"],"trace":"1","replyTo":"1","hops":1,"payload":{"type":"json","data":{"say":"The tide kept me.","pose":"deal"}}},
+    {"type":"signal","t":691,"id":"16","from":"max","to":["kid"],"trace":"1","cause":"15","hops":2,"payload":{"type":"json","data":{"say":"The tide kept me.","pose":"deal"}}},
+    {"type":"answer","t":1175,"id":"26","from":"max","to":["kid"],"trace":"1","replyTo":"13","hops":3,"payload":{"type":"json","data":{"say":"And you always keep score.","pose":"fedup"}}},
+    {"type":"signal","t":1175,"id":"27","from":"max","to":["kid"],"trace":"1","cause":"26","hops":4,"payload":{"type":"json","data":{"say":"And you always keep score.","pose":"fedup"}}},
+    {"type":"drop","t":1175,"id":"27","from":"max","to":["kid"],"trace":"1","cause":"26","hops":4,"neuron":"kid","reason":"hops","payload":{"type":"json","data":{"say":"And you always keep score.","pose":"fedup"}}},
+    {"type":"answer","t":1325,"id":"28","from":"kid","to":["max"],"trace":"1","replyTo":"16","hops":3,"payload":{"type":"json","data":{"say":"The tide is not an excuse.","pose":"feel-angry"}}},
+    {"type":"signal","t":1325,"id":"29","from":"kid","to":["max"],"trace":"1","cause":"28","hops":4,"payload":{"type":"json","data":{"say":"The tide is not an excuse.","pose":"feel-angry"}}},
+    {"type":"drop","t":1325,"id":"29","from":"kid","to":["max"],"trace":"1","cause":"28","hops":4,"neuron":"max","reason":"hops","payload":{"type":"json","data":{"say":"The tide is not an excuse.","pose":"feel-angry"}}},
+    {"type":"finished","t":1325,"trace":"1","status":"done"},
+    {"type":"signal","t":2200,"id":"30","from":"cue","to":["max","kid"],"trace":"30","hops":0,"payload":{"type":"text","text":"I brought the moon back."}},
+    {"type":"answer","t":2892,"id":"41","from":"kid","to":["cue"],"trace":"30","replyTo":"30","hops":1,"payload":{"type":"json","data":{"say":"I carried it all the way back.","pose":"feel-proud"}}},
+    {"type":"signal","t":2892,"id":"42","from":"kid","to":["max"],"trace":"30","cause":"41","hops":2,"payload":{"type":"json","data":{"say":"I carried it all the way back.","pose":"feel-proud"}}},
+    {"type":"answer","t":2973,"id":"44","from":"max","to":["cue"],"trace":"30","replyTo":"30","hops":1,"payload":{"type":"json","data":{"say":"It was on my way.","pose":"thinking"}}},
+    {"type":"signal","t":2973,"id":"45","from":"max","to":["kid"],"trace":"30","cause":"44","hops":2,"payload":{"type":"json","data":{"say":"It was on my way.","pose":"thinking"}}},
+    {"type":"answer","t":3524,"id":"55","from":"max","to":["kid"],"trace":"30","replyTo":"42","hops":3,"payload":{"type":"json","data":{"say":"Everything is on my way.","pose":"dunno"}}},
+    {"type":"signal","t":3524,"id":"56","from":"max","to":["kid"],"trace":"30","cause":"55","hops":4,"payload":{"type":"json","data":{"say":"Everything is on my way.","pose":"dunno"}}},
+    {"type":"drop","t":3524,"id":"56","from":"max","to":["kid"],"trace":"30","cause":"55","hops":4,"neuron":"kid","reason":"hops","payload":{"type":"json","data":{"say":"Everything is on my way.","pose":"dunno"}}},
+    {"type":"answer","t":3608,"id":"57","from":"kid","to":["max"],"trace":"30","replyTo":"45","hops":3,"payload":{"type":"json","data":{"say":"It is never on your way.","pose":"feel-sulking"}}},
+    {"type":"signal","t":3608,"id":"58","from":"kid","to":["max"],"trace":"30","cause":"57","hops":4,"payload":{"type":"json","data":{"say":"It is never on your way.","pose":"feel-sulking"}}},
+    {"type":"drop","t":3608,"id":"58","from":"kid","to":["max"],"trace":"30","cause":"57","hops":4,"neuron":"max","reason":"hops","payload":{"type":"json","data":{"say":"It is never on your way.","pose":"feel-sulking"}}},
+    {"type":"finished","t":3608,"trace":"30","status":"done"}
+  ],
+  "summary": {}
+}

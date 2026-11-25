@@ -1,0 +1,31 @@
+{
+  "version": 0,
+  "name": "max-mind",
+  "description": "Max's mind: hear keeps the words, feel decides what they did to him, and speak answers with a line and a face. The three are one character from outside: the composed neuron's answer is speak's.",
+  "entry": "hear",
+  "exit": "speak",
+  "neurons": [
+    {
+      "id": "hear",
+      "run": ["node", "mind/hear.mjs"],
+      "description": "Keeps the words Max just heard (a line from the cue, or another character's answer) as { heard }."
+    },
+    {
+      "id": "feel",
+      "run": ["node", "mind/feel.mjs"],
+      "description": "Decides what the words did to Max: stung, warm or steady."
+    },
+    {
+      "id": "speak",
+      "run": ["node", "mind/speak.mjs"],
+      "threshold": 2,
+      "within": 5000,
+      "description": "Speaks once Max has both the words and the feeling (a threshold-2 join of the two); answers { say, pose } - the line, and the face to say it with."
+    }
+  ],
+  "links": [
+    { "from": "hear", "to": "feel" },
+    { "from": "hear", "to": "speak" },
+    { "from": "feel", "to": "speak" }
+  ]
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>agent-neuron stage</title>
+    <link rel="stylesheet" href="/src/stage.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <h1>agent-neuron <span>stage</span></h1>
+      <p class="tagline">a network is a cast &middot; a run is a performance</p>
+      <div class="load">
+        <select id="show" aria-label="show"></select>
+        <label class="file">open a file
+          <input id="file" type="file" accept=".json,.score,application/json,text/plain" />
+        </label>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="frame" aria-label="stage">
+        <div class="canvas-wrap">
+          <canvas id="stage" width="960" height="600"></canvas>
+          <div id="caption" class="caption" aria-live="polite"></div>
+          <div id="card" class="card" hidden></div>
+        </div>
+        <div class="transport">
+          <button id="play" class="play" aria-label="play or pause">&#9654;</button>
+          <input id="scrub" type="range" min="0" max="1" step="0.01" value="0" aria-label="playhead" />
+          <span id="clock" class="clock">1.1</span>
+          <select id="speed" aria-label="playback speed">
+            <option value="1">1×</option>
+            <option value="0.5">½×</option>
+            <option value="2">2×</option>
+          </select>
+          <span id="meta" class="meta"></span>
+        </div>
+      </section>
+
+      <aside class="panes">
+        <nav class="tabs" role="tablist">
+          <button data-pane="cast" role="tab" aria-selected="true">cast</button>
+          <button data-pane="score" role="tab" aria-selected="false">score</button>
+          <button data-pane="events" role="tab" aria-selected="false">events</button>
+        </nav>
+        <div id="pane-cast" class="pane on" role="tabpanel"></div>
+        <pre id="pane-score" class="pane" role="tabpanel"></pre>
+        <div id="pane-events" class="pane" role="tabpanel"></div>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <span>maxcot draws every line on the canvas &middot; the trace is the script</span>
+      <span id="source" class="source"></span>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

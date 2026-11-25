@@ -1,0 +1,33 @@
+{
+  "version": 0,
+  "name": "duet",
+  "description": "Two characters meet on a stage. Each is a network of its own (max, kid), sealed behind one answer; the cue is the line both hear; each character's answer is sent to the other, and the exchange ends where maxHops 3 stops it. Run it and the trace is a film.",
+  "neurons": [
+    {
+      "id": "cue",
+      "source": true,
+      "at": [-2, 0, 0],
+      "description": "The line that starts the scene: whoever holds the stage says it, and both characters hear it at once."
+    },
+    {
+      "id": "max",
+      "network": "characters/max/max.character.network.json",
+      "maxHops": 3,
+      "at": [0, 0, 0],
+      "description": "Max, dry and unhurried: a character is a network of its own (hear, feel, speak), and from the stage it is one body with one voice."
+    },
+    {
+      "id": "kid",
+      "network": "characters/kid/kid.character.network.json",
+      "maxHops": 3,
+      "at": [2, 0, 0],
+      "description": "The kid, bright and quick to take offence: a second character network, the same three-neuron mind with its own lines."
+    }
+  ],
+  "links": [
+    { "from": "cue", "to": "max" },
+    { "from": "cue", "to": "kid" },
+    { "from": "max", "to": "kid" },
+    { "from": "kid", "to": "max" }
+  ]
+}

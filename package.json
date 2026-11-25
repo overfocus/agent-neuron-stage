@@ -1,0 +1,23 @@
+{
+  "name": "agent-neuron-stage",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "A stage for agent-neuron: a network is a cast, a run is a performance. Plays a trace as a character film with maxcot.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "npm run typecheck && npm run test && npm run build",
+    "score": "node scripts/score.mjs",
+    "duet": "sh scripts/run-duet.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.7",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
+  }
+}
