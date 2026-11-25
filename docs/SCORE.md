@@ -39,7 +39,7 @@ shape is read too — that is the form a program neuron can answer with.
 | `create` | `"who"` | — | one actor whose id and cast are the same name |
 | `exit` | `"id"` | — | takes an actor off (never the last one) |
 | `pose` | one of maxcot's 95 pose names | the actor | springs that pose's layer only (a `mouth-*` leaves the body alone) |
-| `look` | another actor's id, or `"none"` | the actor looking | turns its eyes and a little of its body |
+| `look` | another actor's id, `"us"` (the audience), or `"none"` | the actor looking | turns its eyes and a little of its body |
 | `shot` | `"wide" \| "full" \| "medium" \| "close"` | an id or a list of ids | the camera; `wide` frames everyone or the group in `on` |
 | `style` | a skin name (`pencil`, `riso`, `hologram`, …) | — | restyles the whole cast; `palette` names one of its palettes |
 | `who` | a maxcot cast name | the actor | recasts it (the design morphs) |
