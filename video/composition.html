@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>agent-neuron-stage — the demo take</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0b0d12; }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; color: #f4f1e8; }
+      #frame { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      #stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+      .bubbles { position: absolute; inset: 0; overflow: hidden; }
+      /* the app's bubble, sized for a 1080p frame */
+      .bubble { max-width: 430px; border-width: 3px; border-radius: 16px; padding: 12px 18px 14px; box-shadow: 5px 5px 0 rgb(0 0 0 / 0.28); }
+      .bubble-who { font-size: 15px; letter-spacing: 0.12em; margin-bottom: 4px; }
+      .bubble-line { font-size: 27px; line-height: 1.3; }
+      .bubble-tail { border-left-width: 13px; border-right-width: 13px; border-top-width: 16px; bottom: -16px; }
+      .bubble.below .bubble-tail { border-bottom-width: 16px; top: -16px; }
+
+      .mark { position: absolute; left: 44px; top: 36px; font: 600 20px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.04em; color: rgb(30 30 38 / 0.72); }
+      .mark b { color: #b57a10; font-weight: 700; }
+      .stamp { position: absolute; right: 44px; top: 34px; font: 500 19px/1.4 ui-monospace, Menlo, monospace; color: rgb(30 30 38 / 0.62); text-align: right; }
+
+      .band { position: absolute; left: 0; right: 0; bottom: 0; height: 186px; padding: 26px 44px 0; background: linear-gradient(to bottom, rgb(8 10 14 / 0), rgb(8 10 14 / 0.93) 26%); }
+      .band-label { font: 700 17px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.18em; text-transform: uppercase; color: #e7b25c; margin-bottom: 12px; }
+      .band-text { font-size: 38px; line-height: 1.22; font-weight: 600; letter-spacing: -0.01em; max-width: 1500px; color: #fdfaf2; }
+      .band-text em { font-style: normal; color: #e7b25c; }
+
+      .inset { position: absolute; right: 44px; top: 84px; width: 730px; max-height: 660px; overflow: hidden; padding: 18px 20px; border-radius: 12px;
+        background: rgb(12 14 20 / 0.9); border: 1px solid rgb(231 178 92 / 0.4); box-shadow: 0 18px 50px rgb(0 0 0 / 0.35); }
+      .inset h4 { margin: 0 0 10px; font: 700 13px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.16em; text-transform: uppercase; color: #e7b25c; }
+      .inset pre { margin: 0; font: 400 15px/1.42 ui-monospace, Menlo, monospace; color: #dfe6f2; white-space: pre; }
+      .inset .dim { color: #8d95a8; }
+      .card { position: absolute; inset: 0; display: grid; place-items: center; background: rgb(8 9 12 / 0.82);
+        font: 700 108px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.16em; text-transform: uppercase; color: #f6f2e8; text-align: center; }
+      .card small { display: block; margin-top: 22px; font: 600 24px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.2em; color: #e7b25c; }
+      [hidden] { display: none !important; }
+    </style>
+    <script>
+      // Pinned before any module loads: maxcot blinks (and seeds a few things) with
+      // Math.random, and a render must produce the same frames every time.
+      let seed = 0x2f6e2b1;
+      Math.random = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+    </script>
+  </head>
+  <body>
+    <div id="frame">
+      <canvas id="stage" width="1920" height="1080"></canvas>
+      <div id="bubbles" class="bubbles"></div>
+      <div id="mark" class="mark">agent-neuron <b>stage</b></div>
+      <div id="stamp" class="stamp"></div>
+      <div id="band" class="band">
+        <div id="label" class="band-label"></div>
+        <div id="text" class="band-text"></div>
+      </div>
+      <div id="inset" class="inset" hidden>
+        <h4>the compiled score</h4>
+        <pre id="inset-code"></pre>
+      </div>
+      <div id="card" class="card" hidden></div>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

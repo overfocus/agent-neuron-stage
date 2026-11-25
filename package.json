@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "A stage for agent-neuron: a network is a cast, a run is a performance. Plays a trace as a character film with maxcot.",
+  "description": "A stage for agent-neuron networks, drawn by maxcot: a network is a cast, a run is a performance.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -19,5 +19,6 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.1"
-  }
+  },
+  "license": "MIT"
 }

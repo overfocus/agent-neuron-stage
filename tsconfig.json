@@ -17,5 +17,5 @@
       "maxcot/*": ["./vendor/maxcot/src/*/index.ts"]
     }
   },
-  "include": ["src", "test", "spikes", "vite.config.ts"]
+  "include": ["src", "test", "spikes", "video", "vite.config.ts"]
 }

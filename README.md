@@ -1,7 +1,8 @@
 # agent-neuron-stage
 
-A stage for [agent-neuron](../agent-neuron) networks, drawn by
-[maxcot](../maxcot): a network is a cast, a run is a performance.
+A stage for [agent-neuron](https://github.com/overfocus/agent-neuron) networks,
+drawn by [maxcot](https://github.com/shibli21/maxcot): a network is a cast, a run
+is a performance.
 
 A neuron becomes a character. Its `id` names it, its `description` is what it
 is, its kind decides how it carries itself, and a link is who it turns to. Run
@@ -10,6 +11,22 @@ every quiet is a shrug, every dropped line is a refusal, and the reply chain is
 the scene. A character can be one neuron or a network of its own (a composed
 neuron), so a character with a mind inside it is a file this repo already
 knows how to draw.
+
+## Built on maxcot
+
+The characters, the skins, the poses and the film are
+**[maxcot](https://github.com/shibli21/maxcot)**, by
+[shibli21](https://github.com/shibli21): one rig, 26 visual skins, 8 actors, a
+film player and a bars-and-beats sequencer, drawn entirely in code — no images,
+no sprites, every line and halftone dot generated each frame. It is vendored
+here unmodified (MIT) because its workspace publishes nothing to npm yet, and
+every drawing on this stage is maxcot's.
+
+**A huge thank you to shibli21.** This project is a stage built out of that
+engine: the part that decides what happens is agent-neuron's, and everything
+that looks alive is maxcot's. The one thing the stage adds to the picture is
+page text (a speech bubble), and it would rather maxcot grew that itself.
+
 
 ## Run it
 
@@ -69,7 +86,16 @@ node scripts/score.mjs - < a-score.json > a-score.score
 
 Both `run-*` scripts want a `neuron-engine` binary: `$NEURON_ENGINE`, or the
 debug build next to this repo. The trace committed here was written by
-`neuron-engine 0.0.0 58d184e2b1a6` from [agent-neuron](../agent-neuron) `main`.
+`neuron-engine 0.0.0 58d184e2b1a6` from
+[agent-neuron](https://github.com/overfocus/agent-neuron) `main`.
+
+## The film
+
+`video/` renders the demo take for the portfolio page: a composition that steps
+the real host frame by frame (not a screen recording), so the stage's springs
+and camera eases are the app's and the take is repeatable. See
+`video/README.md`; the film itself lives with the page that plays it.
+
 
 ## What is where
 
