@@ -42,7 +42,11 @@ a network's answer: one program that writes a scene and answers with it
 (`examples/writer/`). **alerts** is a recording shipped with agent-neuron: a
 network with six neurons and 261 events, compiled the same way. **troupe** is
 the other way round: six characters, each one neuron, each answering with its own
-line, face and hand (`examples/troupe/`). Under them, the **scene book**: eleven
+line, face and hand (`examples/troupe/`). **riemann** is the same door with a
+model behind it: seven mathematicians at one table, each a neuron with its own
+voice, each answering the last line out loud, about the Riemann hypothesis
+(`examples/riemann/`) — and each standing at its own place in the room, so the
+cast has depth instead of a line. Under them, the **scene book**: eleven
 hand-written scores, one to eight characters each, from a graphite solo to a
 stencilled mob (`n` and `p` step through them).
 
@@ -132,10 +136,15 @@ the cast size it claims and to maxcot's own pose, skin and cast tables.
 <td><img src="media/stills/mosaic.jpg" alt="mosaic: eight characters, each drawn in a different skin"></td>
 <td><img src="media/stills/troupe.jpg" alt="troupe: six characters from a network run, six skins"></td>
 </tr>
+<tr>
+<td><img src="media/stills/riemann.jpg" alt="riemann: seven mathematicians at a table, a model in each, a room with depth"></td>
+<td></td>
+</tr>
 </table>
 
-Two of them are not one skin: **mosaic** draws eight characters in eight skins,
-and **troupe** gets the same kind of cast out of a network run. maxcot's stage
+Three of them are not one skin: **mosaic** draws eight characters in eight skins,
+**troupe** gets the same kind of cast out of a network run, and **riemann** puts
+seven mathematicians and a question in a room with depth. maxcot's stage
 paints a cast in a single skin by design, so those two are composited — each
 actor's scene painted again in its own skin, clipped to its body
 (`docs/SCORE.md`, *Mixed looks*; `spikes/003` has the numbers: 8 characters run
@@ -169,11 +178,12 @@ to a named bar and beat, and shoots the canvas.
 | `src/show.ts` | what a show is, and how it writes itself back out as a score |
 | `src/host.ts` | the thin host: commands → a maxcot `Stage` and `Conductor` |
 | `src/main.ts` | the page: canvases, transport, panes, file input |
-| `scenes/` | the scene book: ten scores, and the list the page offers (`index.ts`) |
+| `scenes/` | the scene book: eleven scores, and the list the page offers (`index.ts`) |
 | `media/` | the stills: `stills/` at 1920×1080, `social/` at 1200×630 |
 | `examples/duet/` | the two-character network, its minds, its inputs |
 | `examples/writer/` | one program that answers a whole scene, and the scene it answered |
 | `examples/troupe/` | six characters as six neurons, each with its own line and its own skin |
+| `examples/riemann/` | seven mathematicians, each a neuron and its own voice, a model answering in each |
 | `video/stills.py` | a still per scene, from the page, for the README and for posting |
 | `spikes/` | throwaway experiments with a verdict: facing, speech bubbles, mixed skins and a cast of many |
 | `vendor/maxcot/` | maxcot's library, unmodified, MIT (see `vendor/VENDORED.md`) |

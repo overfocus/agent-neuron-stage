@@ -1,11 +1,14 @@
 // cast.ts: a trace's header is a cast list. Every neuron is an actor, and the
 // links say where it stands.
 //
-// A trace carries no `at` (TRACE.md: id, kind, description, options, cost), so
-// the blocking is read from the graph instead: the cast is laid out in layers,
-// one layer per step away from the neurons nothing reaches. A network that
-// flows left to right reads that way on the stage, and a broadcast (one source
-// into two characters) puts the two side by side, facing the one who spoke.
+// A trace may carry the network file's own placement (`at`, decision 0025 in
+// agent-neuron). When it does, the character stands there: x on the floor, z
+// into the picture (maxcot scales a member by 1/(1 + z*0.25) and raises it by
+// z*unit*0.12, so a far one is smaller and higher - that IS the depth). A
+// neuron without one, and every trace from an older engine, still gets the
+// graph layout: the cast in layers, one layer per step away from the neurons
+// nothing reaches, so a network that flows left to right reads that way on the
+// stage.
 import { CAST } from 'maxcot';
 import type { Trace, TraceNeuron } from './trace.ts';
 
@@ -91,8 +94,9 @@ export function castOf(trace: Trace, o: CastOptions = {}): StageActor[] {
     return {
       id: n.id,
       who: o.who?.[n.id] ?? whoOf(n.id),
-      x: o.x?.[n.id] ?? (placed.get(n.id) ?? 0) - mid,
-      z: (hash(n.id) % 3) * 0.12,
+      // The author's blocking wins: x is the floor, z is depth (and so size).
+      x: o.x?.[n.id] ?? n.at?.[0] ?? (placed.get(n.id) ?? 0) - mid,
+      z: n.at?.[2] ?? (hash(n.id) % 3) * 0.12,
       weight: Math.min(0.95, (WEIGHT[kind] ?? 0.5) + (threshold > 1 ? 0.15 : 0)),
       idle: IDLE[kind] ?? 'still',
       kind,

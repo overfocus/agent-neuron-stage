@@ -101,6 +101,26 @@ only faces itself if something turns it — and `look` is not enough: maxcot's
 - A score that wants another orientation sets `view.yaw` itself, after the
   enter; the last one wins.
 
+## Depth: where a character stands
+
+`enter` takes `x` and `z`. `x` is the floor, left to right, in body units; `z` is
+into the picture. maxcot scales a member by `1 / (1 + z * 0.25)` and lifts it by
+`z * unit * 0.12`, so a character further back is smaller and sits higher. That is
+the whole of depth: a nearer figure is larger because it is nearer, and there is
+no separate size dial to keep in step with it.
+
+A trace carries the network file's own `at` for each neuron — three numbers,
+`[x, y, z]` (decision 0025 in agent-neuron) — and the compiler enters each actor
+at `at[0]` and `at[2]`. `y` is the network file's business; the stage ignores it.
+A trace with no `at`, including every recording made before that field, still gets
+the layout from the links (layers away from the neurons nothing reaches), so an
+old show plays as it did.
+
+```
+{ at: [1, 1], enter: { id: "ada", who: "child", x: 0.4, z: -1 } }   // near: large
+{ at: [1, 1], enter: { id: "iris", who: "oldman", x: 1.9, z: 1.7 } } // back: small
+```
+
 ## Speech: where a line is drawn
 
 `say` puts the line in a bubble over the speaker's head, anchored to the actor's

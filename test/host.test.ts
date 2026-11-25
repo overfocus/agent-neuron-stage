@@ -8,6 +8,7 @@ import { ShowHost } from '../src/host.ts';
 import { parseTrace } from '../src/trace.ts';
 import { parseShow } from '../src/fromscore.ts';
 import duetJson from '../src/traces/duet.json';
+import riemannJson from '../src/traces/riemann.json';
 
 const duet = parseTrace(duetJson);
 const show = compileTrace(duet);
@@ -168,5 +169,23 @@ describe('ShowHost', () => {
     host.seek(host.total);
     expect(host.stage.get('max').design['view.yaw']).toBeCloseTo(0.38, 5);
     expect(host.stage.get('kid').design['view.yaw']).toBeCloseTo(-0.38, 5);
+  });
+
+  it('draws the trace’s depth: a near figure bigger and higher than a far one', () => {
+    const riemann = compileTrace(parseTrace(riemannJson));
+    const host = new ShowHost(fakeCanvas(960, 600), riemann);
+    host.seek(1.2); // after every enter, before the first camera move
+    host.tick(1 / 60);
+    expect(host.stage.member('ada').z).toBe(-1);
+    expect(host.stage.member('otto').z).toBe(1.6);
+    const near = host.actorBox('ada')!;
+    const far = host.actorBox('otto')!;
+    // Designs differ in build, so compare the unit they are drawn at: box
+    // height over the design's own height. maxcot's scale is 1/(1 + z*0.25),
+    // so the near one is drawn at 1.33 against 0.71 - about 1.9x.
+    const unitOf = (id: string, h: number) => h / (2 * (host.stage.get(id).design['body.h'] ?? 1));
+    expect(unitOf('ada', near.h)).toBeGreaterThan(unitOf('otto', far.h) * 1.5);
+    // and the stage lifts a far member by z*unit*0.12: its feet are higher
+    expect(far.y + far.h).toBeLessThan(near.y + near.h);
   });
 });

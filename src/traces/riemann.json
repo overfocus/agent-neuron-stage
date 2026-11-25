@@ -1,0 +1,49 @@
+{
+  "format": "agent-neuron-trace",
+  "version": 1,
+  "demo": "riemann",
+  "description": "Seven mathematicians at one table, each a neuron and each a voice, answering about the Riemann hypothesis with a model's words. Every character stands where the file puts it - x along the ground, z into the picture, so a near one is larger and a far one smaller - and every character answers with its own hand. The run is the conversation: the cue asks, Ada answers, and each answer goes to the next in the arc until the last is turned away at maxHops.",
+  "library": "0.0.0",
+  "engine": "agent-neuron-rust",
+  "ids": {"signal":"run-numbered","trace":"run-numbered"},
+  "neurons": [
+    {"id":"cue","kind":"source","description":"The question the table is asked: whoever holds the stage says it once and the room hears it.","at":[-5.4,0,0.2]},
+    {"id":"ada","kind":"run","description":"Ada, nearest the camera and furthest from certainty: an analytic number theorist who will not take a hunch for evidence.","options":{"maxHops":13},"at":[0.4,0,-1]},
+    {"id":"rosa","kind":"run","description":"Rosa, who trusts only counts, and has checked more zeros than anyone at the table and still says it proves nothing.","options":{"maxHops":13},"at":[3.3,0,-0.6]},
+    {"id":"bruno","kind":"run","description":"Bruno, one step back and already certain: he hears the zeros as a chord and overclaims in images.","options":{"maxHops":13},"at":[4.7,0,1.1]},
+    {"id":"iris","kind":"run","description":"Iris, further back still: a historian who dates every claim and knows exactly who proved what, and when.","options":{"maxHops":13},"at":[1.9,0,1.7]},
+    {"id":"otto","kind":"run","description":"Otto at the back of the room: a physicist who hears random matrices in the zeros and trusts analogy over proof.","options":{"maxHops":13},"at":[-1,0,1.6]},
+    {"id":"lea","kind":"run","description":"Lea, coming round the far side: a formalist who wants to know what 'true' is supposed to mean here.","options":{"maxHops":13},"at":[-2.5,0,-0.4]},
+    {"id":"jules","kind":"run","description":"Jules, plain and impatient: not a number theorist, and not shy about asking what the theorem would pay for.","options":{"maxHops":13},"at":[-3.9,0,1.2]}
+  ],
+  "links": [
+    {"from":"cue","to":"ada"},
+    {"from":"ada","to":"rosa"},
+    {"from":"rosa","to":"bruno"},
+    {"from":"bruno","to":"iris"},
+    {"from":"iris","to":"otto"},
+    {"from":"otto","to":"lea"},
+    {"from":"lea","to":"jules"},
+    {"from":"jules","to":"ada"}
+  ],
+  "events": [
+    {"type":"signal","t":0,"id":"1","from":"cue","to":["ada"],"trace":"1","hops":0,"payload":{"type":"text","text":"The Riemann hypothesis. Around this table, one line each: is it true, or only very well tested?"}},
+    {"type":"answer","t":849,"id":"2","from":"ada","to":["cue"],"trace":"1","replyTo":"1","hops":1,"payload":{"type":"json","data":{"say":"Ten trillion zeros checked is evidence, not proof; truth needs Hardy's theorem to become fact.","pose":"thinking","skin":"sketch"}}},
+    {"type":"signal","t":849,"id":"3","from":"ada","to":["rosa"],"trace":"1","cause":"2","hops":2,"payload":{"type":"json","data":{"say":"Ten trillion zeros checked is evidence, not proof; truth needs Hardy's theorem to become fact.","pose":"thinking","skin":"sketch"}}},
+    {"type":"answer","t":2247,"id":"4","from":"rosa","to":["ada"],"trace":"1","replyTo":"3","hops":3,"payload":{"type":"json","data":{"say":"Hardy proved infinitely many zeros lie on the line, not all; only a full count settles it.","pose":"deal","skin":"pixel"}}},
+    {"type":"signal","t":2247,"id":"5","from":"rosa","to":["bruno"],"trace":"1","cause":"4","hops":4,"payload":{"type":"json","data":{"say":"Hardy proved infinitely many zeros lie on the line, not all; only a full count settles it.","pose":"deal","skin":"pixel"}}},
+    {"type":"answer","t":3101,"id":"6","from":"bruno","to":["rosa"],"trace":"1","replyTo":"5","hops":5,"payload":{"type":"json","data":{"say":"Listen, Hardy gave us the melody, but ten trillion zeros already sing the whole chord.","pose":"feel-happy","skin":"riso"}}},
+    {"type":"signal","t":3101,"id":"7","from":"bruno","to":["iris"],"trace":"1","cause":"6","hops":6,"payload":{"type":"json","data":{"say":"Listen, Hardy gave us the melody, but ten trillion zeros already sing the whole chord.","pose":"feel-happy","skin":"riso"}}},
+    {"type":"answer","t":4168,"id":"8","from":"iris","to":["bruno"],"trace":"1","replyTo":"7","hops":7,"payload":{"type":"json","data":{"say":"Charming, but Hardy only proved infinitely many zeros on the line in 1914 — infinitely many proves nothing here.","pose":"letter","skin":"inkpunch"}}},
+    {"type":"signal","t":4168,"id":"9","from":"iris","to":["otto"],"trace":"1","cause":"8","hops":8,"payload":{"type":"json","data":{"say":"Charming, but Hardy only proved infinitely many zeros on the line in 1914 — infinitely many proves nothing here.","pose":"letter","skin":"inkpunch"}}},
+    {"type":"answer","t":5118,"id":"10","from":"otto","to":["iris"],"trace":"1","replyTo":"9","hops":9,"payload":{"type":"json","data":{"say":"True, but the first eigenvalue tells you little until you hear the whole spectrum's statistics.","pose":"thinking","skin":"manga"}}},
+    {"type":"signal","t":5118,"id":"11","from":"otto","to":["lea"],"trace":"1","cause":"10","hops":10,"payload":{"type":"json","data":{"say":"True, but the first eigenvalue tells you little until you hear the whole spectrum's statistics.","pose":"thinking","skin":"manga"}}},
+    {"type":"answer","t":6085,"id":"12","from":"lea","to":["otto"],"trace":"1","replyTo":"11","hops":11,"payload":{"type":"json","data":{"say":"Statistics of what until you specify the Hilbert space and what truth means there.","pose":"eyes-suspicious","skin":"felttip"}}},
+    {"type":"signal","t":6085,"id":"13","from":"lea","to":["jules"],"trace":"1","cause":"12","hops":12,"payload":{"type":"json","data":{"say":"Statistics of what until you specify the Hilbert space and what truth means there.","pose":"eyes-suspicious","skin":"felttip"}}},
+    {"type":"answer","t":7735,"id":"14","from":"jules","to":["lea"],"trace":"1","replyTo":"13","hops":13,"payload":{"type":"json","data":{"say":"See, this is why outsiders stop listening: you argue definitions while the zeros sit there unexplained.","pose":"fedup","skin":"stencil"}}},
+    {"type":"signal","t":7735,"id":"15","from":"jules","to":["ada"],"trace":"1","cause":"14","hops":14,"payload":{"type":"json","data":{"say":"See, this is why outsiders stop listening: you argue definitions while the zeros sit there unexplained.","pose":"fedup","skin":"stencil"}}},
+    {"type":"drop","t":7735,"id":"15","from":"jules","to":["ada"],"trace":"1","cause":"14","hops":14,"neuron":"ada","reason":"hops","payload":{"type":"json","data":{"say":"See, this is why outsiders stop listening: you argue definitions while the zeros sit there unexplained.","pose":"fedup","skin":"stencil"}}},
+    {"type":"finished","t":7735,"trace":"1","status":"done"}
+  ],
+  "summary": {}
+}

@@ -37,6 +37,7 @@ STILLS = [
     ("scene:the-wall", (3, 1), "the-wall", "seven in stencil"),
     ("scene:mosaic", (2, 1), "mosaic", "eight of them, eight skins, one picture"),
     ("troupe", (2, 3), "troupe", "six characters, six neurons, six skins, from a real run"),
+    ("riemann", (3, 4.33), "riemann", "seven mathematicians at a table, a model in each, a room with depth"),
 ]
 
 

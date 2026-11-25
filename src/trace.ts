@@ -30,6 +30,13 @@ export interface TraceNeuron {
   id: string;
   kind: string;
   description: string;
+  /**
+   * Where the network file put the neuron, `[x, y, z]` (decision 0025 in
+   * agent-neuron). Descriptive: nothing in the run acted on it, and a trace
+   * from an older engine has none. The stage reads x as the floor and z as
+   * depth; y is the file's own business.
+   */
+  at?: [number, number, number];
   options?: { threshold?: number; within?: number; maxHops?: number };
 }
 
@@ -157,6 +164,7 @@ function readNeuron(value: unknown): TraceNeuron {
     id,
     kind: str(o.kind) ?? 'run',
     description: str(o.description) ?? '',
+    at: vec3(o.at),
     options: options
       ? { threshold: num(options.threshold), within: num(options.within), maxHops: num(options.maxHops) }
       : undefined
@@ -214,4 +222,11 @@ function num(v: unknown): number | undefined {
   if (typeof v === 'number' && Number.isFinite(v)) return v;
   if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v);
   return undefined;
+}
+/** A place on the stage: three finite numbers, or nothing (a malformed `at` is not a failure). */
+function vec3(v: unknown): [number, number, number] | undefined {
+  if (!Array.isArray(v) || v.length !== 3) return undefined;
+  const [x, y, z] = v;
+  if (![x, y, z].every((n) => typeof n === 'number' && Number.isFinite(n))) return undefined;
+  return [x, y, z];
 }

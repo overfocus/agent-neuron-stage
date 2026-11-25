@@ -1,0 +1,191 @@
+{
+  "version": 0,
+  "name": "riemann",
+  "description": "Seven mathematicians at one table, each a neuron and each a voice, answering about the Riemann hypothesis with a model's words. Every character stands where the file puts it - x along the ground, z into the picture, so a near one is larger and a far one smaller - and every character answers with its own hand. The run is the conversation: the cue asks, Ada answers, and each answer goes to the next in the arc until the last is turned away at maxHops.",
+  "neurons": [
+    {
+      "id": "cue",
+      "source": true,
+      "at": [
+        -5.4,
+        0,
+        0.2
+      ],
+      "description": "The question the table is asked: whoever holds the stage says it once and the room hears it."
+    },
+    {
+      "id": "ada",
+      "run": [
+        "node",
+        "mind/ada.mjs"
+      ],
+      "timeout": 20000,
+      "maxHops": 13,
+      "at": [
+        0.4,
+        0,
+        -1.0
+      ],
+      "may": {
+        "connect": [
+          "127.0.0.1:11434"
+        ]
+      },
+      "description": "Ada, nearest the camera and furthest from certainty: an analytic number theorist who will not take a hunch for evidence."
+    },
+    {
+      "id": "rosa",
+      "run": [
+        "node",
+        "mind/rosa.mjs"
+      ],
+      "timeout": 20000,
+      "maxHops": 13,
+      "at": [
+        3.3,
+        0,
+        -0.6
+      ],
+      "may": {
+        "connect": [
+          "127.0.0.1:11434"
+        ]
+      },
+      "description": "Rosa, who trusts only counts, and has checked more zeros than anyone at the table and still says it proves nothing."
+    },
+    {
+      "id": "bruno",
+      "run": [
+        "node",
+        "mind/bruno.mjs"
+      ],
+      "timeout": 20000,
+      "maxHops": 13,
+      "at": [
+        4.7,
+        0,
+        1.1
+      ],
+      "may": {
+        "connect": [
+          "127.0.0.1:11434"
+        ]
+      },
+      "description": "Bruno, one step back and already certain: he hears the zeros as a chord and overclaims in images."
+    },
+    {
+      "id": "iris",
+      "run": [
+        "node",
+        "mind/iris.mjs"
+      ],
+      "timeout": 20000,
+      "maxHops": 13,
+      "at": [
+        1.9,
+        0,
+        1.7
+      ],
+      "may": {
+        "connect": [
+          "127.0.0.1:11434"
+        ]
+      },
+      "description": "Iris, further back still: a historian who dates every claim and knows exactly who proved what, and when."
+    },
+    {
+      "id": "otto",
+      "run": [
+        "node",
+        "mind/otto.mjs"
+      ],
+      "timeout": 20000,
+      "maxHops": 13,
+      "at": [
+        -1.0,
+        0,
+        1.6
+      ],
+      "may": {
+        "connect": [
+          "127.0.0.1:11434"
+        ]
+      },
+      "description": "Otto at the back of the room: a physicist who hears random matrices in the zeros and trusts analogy over proof."
+    },
+    {
+      "id": "lea",
+      "run": [
+        "node",
+        "mind/lea.mjs"
+      ],
+      "timeout": 20000,
+      "maxHops": 13,
+      "at": [
+        -2.5,
+        0,
+        -0.4
+      ],
+      "may": {
+        "connect": [
+          "127.0.0.1:11434"
+        ]
+      },
+      "description": "Lea, coming round the far side: a formalist who wants to know what 'true' is supposed to mean here."
+    },
+    {
+      "id": "jules",
+      "run": [
+        "node",
+        "mind/jules.mjs"
+      ],
+      "timeout": 20000,
+      "maxHops": 13,
+      "at": [
+        -3.9,
+        0,
+        1.2
+      ],
+      "may": {
+        "connect": [
+          "127.0.0.1:11434"
+        ]
+      },
+      "description": "Jules, plain and impatient: not a number theorist, and not shy about asking what the theorem would pay for."
+    }
+  ],
+  "links": [
+    {
+      "from": "cue",
+      "to": "ada"
+    },
+    {
+      "from": "ada",
+      "to": "rosa"
+    },
+    {
+      "from": "rosa",
+      "to": "bruno"
+    },
+    {
+      "from": "bruno",
+      "to": "iris"
+    },
+    {
+      "from": "iris",
+      "to": "otto"
+    },
+    {
+      "from": "otto",
+      "to": "lea"
+    },
+    {
+      "from": "lea",
+      "to": "jules"
+    },
+    {
+      "from": "jules",
+      "to": "ada"
+    }
+  ]
+}

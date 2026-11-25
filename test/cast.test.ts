@@ -74,6 +74,51 @@ describe('castOf', () => {
     expect(castOf(t)).toHaveLength(2);
   });
 
+  it('stands the cast where a trace says, letting z carry the depth', () => {
+    const t = parseTrace({
+      format: 'agent-neuron-trace',
+      version: 1,
+      demo: 'deep',
+      neurons: [
+        { id: 'near', kind: 'run', at: [-2.5, 0, -0.6] },
+        { id: 'far', kind: 'run', at: [2.75, 0, 2.25] },
+        { id: 'unplaced', kind: 'run' }
+      ],
+      links: [
+        { from: 'near', to: 'far' },
+        { from: 'far', to: 'unplaced' }
+      ],
+      events: []
+    });
+    const actors = castOf(t);
+    const near = actors.find((a) => a.id === 'near')!;
+    const far = actors.find((a) => a.id === 'far')!;
+    expect(near.x).toBe(-2.5);
+    expect(near.z).toBe(-0.6);
+    expect(far.x).toBe(2.75);
+    expect(far.z).toBe(2.25);
+    // maxcot's scale for a member is 1/(1 + z*0.25): the far one is smaller.
+    expect(1 / (1 + far.z * 0.25)).toBeLessThan(1 / (1 + near.z * 0.25));
+    // a neuron with no `at` still gets the graph layout
+    expect(actors.find((a) => a.id === 'unplaced')!.z).toBeGreaterThanOrEqual(0);
+  });
+
+  it('ignores an `at` that is not three numbers', () => {
+    const t = parseTrace({
+      format: 'agent-neuron-trace',
+      version: 1,
+      demo: 'bad-at',
+      neurons: [
+        { id: 'a', kind: 'run', at: [1, 2] },
+        { id: 'b', kind: 'run', at: ['x', 0, 0] }
+      ],
+      links: [{ from: 'a', to: 'b' }],
+      events: []
+    });
+    expect(t.neurons.every((n) => n.at === undefined)).toBe(true);
+    expect(castOf(t)).toHaveLength(2);
+  });
+
   it('takes a pinned actor and a pinned place', () => {
     const actors = castOf(trace, { who: { max: 'boss' }, x: { max: 0.5 } });
     expect(actors.find((a) => a.id === 'max')?.who).toBe('boss');
