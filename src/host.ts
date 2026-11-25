@@ -39,8 +39,8 @@ interface Walk {
 }
 
 export interface HostHooks {
-  /** A line was spoken (or, with an empty text, the caption clears). */
-  onLine?(who: string, text: string): void;
+  /** A line was spoken (or, with an empty text, the caption clears). `instant` is a seek replay. */
+  onLine?(who: string, text: string, instant: boolean): void;
   /** The end card shows, or null when it goes away. */
   onCard?(text: string | null): void;
   /** The playhead, in bars and beats, a few times a second. */
@@ -190,7 +190,7 @@ export class ShowHost {
     this.stage.setSkin(this.skin, this.show.palette);
     this.stage.shot('wide', undefined, true);
     this.stage.dirty = true;
-    this.hooks.onLine?.('', '');
+    this.hooks.onLine?.('', '', false);
     this.hooks.onCard?.(null);
   }
 
@@ -445,7 +445,7 @@ export class ShowHost {
         const id = this.actorId(event);
         const line = text(value) ?? '';
         if (id) this.last = id;
-        this.hooks.onLine?.(id, line);
+        this.hooks.onLine?.(id, line, ctx.instant);
         return;
       }
       case 'end': {

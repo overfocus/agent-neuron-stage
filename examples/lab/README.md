@@ -10,7 +10,7 @@ and the branch that nobody picks up simply dies.
 ```
 examples/lab/
   lab.network.json     the question, seven run neurons with their places, the mesh
-  lab.inputs.jsonl     one cue: the question the room is asked
+  lab.inputs.jsonl     two cues: the question, then the machine's next result at 5 s
   mind/glm.mjs         the seven voices, the die, the moods, the step, the call
   mind/ada.mjs … lea.mjs   seven tiny files, one per scientist
 ```
@@ -20,7 +20,8 @@ sh scripts/run-lab.sh            # check + run, writes src/traces/lab.json
 ```
 
 The page lists it under **a run, compiled**: eight actors (the cue asks), seven
-of them in their own skins, in a room that has depth. Its **net** pane draws the
+of them in their own skins, in a room that has depth. Bubbles keep their second
+and never cover each other, so the argument reads as several people at once. Its **net** pane draws the
 mesh - every neuron where the file puts it, every link an arrow - with one badge
 under the room for the model all seven ask: `glm-5.3-flash:cloud`.
 
@@ -84,8 +85,8 @@ over it in their own hands: seven hands on one wall.
 ## Notes
 
 - A turn is one process and one cloud call, so the film is the sum of those
-  latencies on one clock (~7 s here). The model refuses too many turns at once
-  (HTTP 429), so the run holds it to three at a time (`--at-once 3`) and each
-  program retries a refusal, a few hundred milliseconds later.
+  latencies on one clock: the committed run is eleven seconds of talk, and the
+  second cue at 5 s keeps the room from going quiet (a conversation this model
+  can carry at three calls at a time is about ten seconds long).
 - No character is told who the others are or what was said before: a program
   receives one line. Personality is the file it runs.

@@ -56,8 +56,9 @@ walk (`scenes/12-a-walk.score`; `n` and `p` step through them).
 - **play / pause** (space), **scrub**, **½×** and **2×**: the film is the run
   on one clock, and the speed is yours.
 - **bubbles | caption**: a line hangs over the speaker's head, tail on the head,
-  and follows the camera through a cut; switch to one line under the picture for
-  a dense run. The switch is remembered.
+  and follows the camera through a cut. A bubble keeps its second on screen and
+  never covers another, so a crowded room has two or three up at once; switch to
+  one line under the picture for a dense run. The switch is remembered.
 - **cast**: every neuron as an actor, with the maxcot actor that plays it, its
   kind, its weight and its line of description. Click a row, or a character on
   the stage.

@@ -108,11 +108,13 @@ describe('compileTrace', () => {
     }
   });
 
-  it('ends on the last moment of the run with a card', () => {
+  it('ends on the last moment of the run with a card, held for one second', () => {
     const show = compileTrace(duet);
     const end = show.events[show.events.length - 1]!;
     expect(end.end).toEqual({ card: 'logo', text: 'DUET' });
-    expect(show.tail).toBeGreaterThan(0);
+    // the card is the last event, so the film's tail is how long the title holds
+    expect(show.tail).toBe(1);
+    expect(compileTrace(duet, { cardSeconds: 2.5 }).tail).toBe(2.5);
   });
 
   it('turns the cast inward, each one toward the people it can reach', () => {

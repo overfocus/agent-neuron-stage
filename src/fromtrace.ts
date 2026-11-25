@@ -26,8 +26,11 @@ export interface CompileOptions extends CastOptions {
   palette?: string;
   /** Beats of empty stage before the run starts. Default one bar. */
   leadInBeats?: number;
-  /** Beats the end card holds after the last moment. Default 6. */
-  tailBeats?: number;
+  /**
+   * Seconds the end card holds at the very end of the film. Default 1: the
+   * title goes up with one second left, not three and a half.
+   */
+  cardSeconds?: number;
   /** How far a character turns toward the one it addresses, in radians. Default 0.38 (the rig's own three-quarter turn). */
   facing?: number;
 }
@@ -78,7 +81,7 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
   const beatsPerBar = o.beatsPerBar ?? 4;
   const spb = 60 / bpm;
   const leadIn = o.leadInBeats ?? beatsPerBar;
-  const tailBeats = o.tailBeats ?? 6;
+  const cardSeconds = Math.max(0.2, o.cardSeconds ?? 1);
   const title = o.title ?? trace.demo ?? 'a run';
   const skin = o.skin ?? 'pencil';
   const actors = castOf(trace, o);
@@ -289,7 +292,8 @@ export function compileTrace(trace: Trace, o: CompileOptions = {}): Show {
     beatsPerBar,
     skin,
     palette: o.palette,
-    tail: Math.max(tailBeats, 2) * spb,
+    // the card is the last event, so the tail is how long it holds on screen
+    tail: cardSeconds,
     actors,
     events
   };

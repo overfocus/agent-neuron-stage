@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDGE, GAP, MIN_W, TAIL_INSET, place } from '../src/bubble.ts';
+import { EDGE, GAP, HOLD, MIN_W, TAIL_INSET, liveLines, overlap, place, placeAll, sayLine } from '../src/bubble.ts';
 
 const bounds = { w: 960, h: 600 };
 
@@ -49,5 +49,70 @@ describe('place', () => {
     expect(p.x).toBeGreaterThanOrEqual(EDGE);
     expect(p.x + p.w).toBeLessThanOrEqual(small.w - EDGE);
     expect(p.y).toBeGreaterThanOrEqual(EDGE);
+  });
+});
+
+describe('a line stays up for its second', () => {
+  it('holds for HOLD seconds of film time, and never less', () => {
+    const said = sayLine([], { id: 'ada:1', who: 'ada', text: 'a line' }, 3);
+    expect(said).toHaveLength(1);
+    expect(said[0]!.until).toBe(3 + HOLD);
+    expect(liveLines(said, 3.0)).toHaveLength(1);
+    expect(liveLines(said, 3.99)).toHaveLength(1); // still up at the end of its second
+    expect(liveLines(said, 3 + HOLD)).toHaveLength(0); // and down after it
+  });
+
+  it('never lets a new line cut short one that is still in its second, even from the same speaker', () => {
+    let lines = sayLine([], { id: 'ada:1', who: 'ada', text: 'first' }, 3);
+    lines = sayLine(lines, { id: 'ada:2', who: 'ada', text: 'second' }, 3.4);
+    expect(lines).toHaveLength(2); // two bubbles, both readable
+    expect(lines.map((l) => l.text)).toEqual(['first', 'second']);
+    // and once the first has had its second, the next line may sweep it away
+    lines = sayLine(lines, { id: 'rosa:1', who: 'rosa', text: 'r' }, 4.1);
+    expect(lines.map((l) => l.text)).toEqual(['second', 'r']);
+  });
+
+  it('keeps a whole room up at once', () => {
+    let lines = sayLine([], { id: 'a', who: 'ada', text: 'a' }, 3);
+    lines = sayLine(lines, { id: 'r', who: 'rosa', text: 'r' }, 3.2);
+    lines = sayLine(lines, { id: 'b', who: 'bruno', text: 'b' }, 3.3);
+    expect(liveLines(lines, 3.5).map((l) => l.who)).toEqual(['ada', 'rosa', 'bruno']);
+  });
+});
+
+describe('placeAll', () => {
+  it('never puts one bubble on another', () => {
+    const heads = [
+      { id: 'a', anchor: { x: 480, y: 300 }, size: { w: 200, h: 50 } },
+      { id: 'b', anchor: { x: 520, y: 306 }, size: { w: 200, h: 50 } },
+      { id: 'c', anchor: { x: 460, y: 292 }, size: { w: 180, h: 46 } }
+    ];
+    const placed = placeAll(heads, bounds);
+    expect(placed).toHaveLength(3);
+    for (let i = 0; i < placed.length; i++) {
+      for (let j = i + 1; j < placed.length; j++) {
+        expect(overlap(placed[i]!, placed[j]!), `${placed[i]!.id} over ${placed[j]!.id}`).toBe(false);
+      }
+      expect(placed[i]!.y).toBeGreaterThanOrEqual(EDGE);
+      expect(placed[i]!.y + placed[i]!.h).toBeLessThanOrEqual(bounds.h - EDGE);
+    }
+  });
+
+  it('leaves a bubble alone when it has the place to itself', () => {
+    const alone = placeAll([{ id: 'a', anchor: { x: 480, y: 300 }, size: { w: 200, h: 50 } }], bounds);
+    expect(alone[0]).toMatchObject(place({ x: 480, y: 300 }, { w: 200, h: 50 }, bounds));
+  });
+
+  it('stacks a crowded room inside the frame', () => {
+    const many = ['a', 'b', 'c', 'd'].map((id, i) => ({
+      id,
+      anchor: { x: 300 + i * 12, y: 120 },
+      size: { w: 200, h: 50 }
+    }));
+    const placed = placeAll(many, bounds);
+    for (let i = 0; i < placed.length; i++) {
+      expect(placed[i]!.y).toBeGreaterThanOrEqual(EDGE);
+      for (let j = i + 1; j < placed.length; j++) expect(overlap(placed[i]!, placed[j]!)).toBe(false);
+    }
   });
 });

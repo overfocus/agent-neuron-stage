@@ -57,18 +57,25 @@ let loaded: Loaded;
 let selected = '';
 
 /** Show a line the way the reader asked for it; an empty text clears both surfaces. */
-function showLine(who: string, text: string): void {
+function showLine(who: string, text: string, instant = false): void {
   last.who = who;
   last.text = text;
-  bubbles.clear();
   caption.classList.remove('said');
   caption.textContent = '';
-  if (!text) return;
-  if (who) select(who);
-  if (lineMode === 'bubbles' && who) {
-    bubbles.say(who, text);
+  if (!text) {
+    bubbles.clear();
     return;
   }
+  if (who) select(who);
+  // a seek replays every line at once: only the one at the playhead stays up.
+  // Otherwise earlier bubbles stay up for their second (bubbles.ts), so a busy
+  // room has several lines on screen and none of them covers another.
+  if (instant) bubbles.clear();
+  if (lineMode === 'bubbles' && who) {
+    bubbles.say(who, text, host ? host.time : 0);
+    return;
+  }
+  bubbles.clear();
   caption.innerHTML = `<b>${escapeHtml(who)}</b>${escapeHtml(text)}`;
   caption.classList.add('said');
 }
@@ -316,6 +323,7 @@ speed.addEventListener('change', () => {
 lineSelect.addEventListener('change', () => {
   lineMode = lineSelect.value === 'caption' ? 'caption' : 'bubbles';
   localStorage.setItem('stage.lines', lineMode);
+  bubbles.clear();
   showLine(last.who, last.text); // move the line that is showing to the other surface
 });
 window.addEventListener('keydown', (event) => {
@@ -486,7 +494,9 @@ function loop(now: number): void {
   const dt = Math.min(0.1, Math.max(0, (now - previous) / 1000));
   previous = now;
   host.tick(dt);
-  if (bubbles.speaker) bubbles.place(host.headOf(bubbles.speaker));
+  // a bubble holds its second on the film's clock, and each follows its own head
+  bubbles.tick(host.time);
+  bubbles.place((id) => host.headOf(id));
   playButton.textContent = host.playing ? '❚❚' : '▶';
   playButton.setAttribute('aria-label', host.playing ? 'pause' : 'play');
   if (host.playing) scrub.value = String(host.time);

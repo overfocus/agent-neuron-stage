@@ -16,14 +16,15 @@ const ENDPOINT = 'http://127.0.0.1:11434/api/chat';
 const MODEL = process.env.LAB_MODEL || 'glm-5.3-flash:cloud';
 const DEADLINE = 18000;
 /** How often a scientist takes the floor when nothing they care about was said. */
-const FLOOR = 0.8;
+const FLOOR = 0.55;
 
 const SETTING =
   'You are in a lab at 2am with six other scientists, arguing about the Riemann hypothesis. ' +
   'Nobody is taking turns: you may interrupt, answer, doubt the last speaker, ask a question, or change ' +
   'the subject to something you care about. One sentence, at most 18 words (under 120 characters). ' +
   'Stay in character. No quotation marks, no emoji, no stage directions, no lists. ' +
-  'A claim about who proved what must be true; never invent a year. Vary what you talk about: the zeros, ' +
+  'A claim about who proved what must be true: cite at most one person, spelled in full, and only when you ' +
+  'are sure of the year. Vary what you talk about: the zeros, ' +
   'the primes, a paper, a doubt, the machine in front of you. Do not repeat the figure the last speaker used.';
 
 /** Things that happen at 2am, to keep two runs from being the same conversation. */
@@ -48,7 +49,7 @@ const VOICES = {
   ada: {
     skin: 'print',
     step: { dx: 0.5, dz: -0.2 },
-    grab: ['proof', 'true', 'evidence', 'prove', 'believe'],
+    grab: ['counterexample', 'evidence', 'rigour'],
     poses: ['thinking', 'dunno', 'deal'],
     signature: 'thinking',
     temperature: 0.9,
@@ -60,7 +61,7 @@ const VOICES = {
   rosa: {
     skin: 'manga',
     step: { dx: -0.6, dz: 0.2 },
-    grab: ['trillion', 'zeros', 'compute', 'bound', 'data'],
+    grab: ['compute', 'bound', 'histogram'],
     poses: ['deal', 'thinking', 'pleased'],
     signature: 'deal',
     temperature: 0.85,
@@ -71,7 +72,7 @@ const VOICES = {
   bruno: {
     skin: 'riso',
     step: { dx: -0.7, dz: -0.2 },
-    grab: ['listen', 'chord', 'beautiful', 'music', 'harmony'],
+    grab: ['chord', 'music', 'harmony'],
     poses: ['feel-happy', 'pleased', 'feel-surprised'],
     signature: 'feel-happy',
     temperature: 1.0,
@@ -83,7 +84,7 @@ const VOICES = {
   iris: {
     skin: 'sketch',
     step: { dx: -0.5, dz: -0.6 },
-    grab: ['hardy', 'history', 'proved', 'riemann', 'turing', 'century'],
+    grab: ['1859', 'hardy', 'turing'],
     poses: ['letter', 'thinking', 'at-ease'],
     signature: 'letter',
     temperature: 0.85,
@@ -95,7 +96,7 @@ const VOICES = {
   otto: {
     skin: 'felttip',
     step: { dx: 0.4, dz: -0.5 },
-    grab: ['spectrum', 'gUE', 'eigenvalue', 'physics', 'matrix', 'random'],
+    grab: ['eigenvalue', 'gue', 'spectrum', 'matrix'],
     poses: ['feel-surprised', 'thinking', 'deal'],
     signature: 'feel-surprised',
     temperature: 0.95,
@@ -107,7 +108,7 @@ const VOICES = {
   lea: {
     skin: 'inkpunch',
     step: { dx: 0.6, dz: -0.4 },
-    grab: ['model', 'axiom', 'define', 'formal', 'independent', 'meaning'],
+    grab: ['axiom', 'formal'],
     poses: ['dunno', 'eyes-suspicious', 'thinking'],
     signature: 'dunno',
     temperature: 0.85,
@@ -119,7 +120,7 @@ const VOICES = {
   jules: {
     skin: 'ballpoint',
     step: { dx: -0.3, dz: 0.3 },
-    grab: ['care', 'pay', 'break', 'useful', 'point'],
+    grab: ['pay', 'break', 'care'],
     poses: ['shrug', 'fedup', 'dunno'],
     signature: 'shrug',
     temperature: 0.95,

@@ -29,7 +29,9 @@ shape is read too — that is the form a program neuron can answer with.
 - Compiling a trace: `beats = leadIn + t_ms / 1000 / (60 / bpm)`, where
   `leadIn` is one bar by default (the cast walks on during it). So the run's
   `t = 0` lands on bar 2 beat 1.
-- `tail` (seconds, default 3.6) is what the stage holds after the last event.
+- `tail` (seconds, default 3.6) is what the stage holds after the last event. A
+  compiled show puts the card last and sets the tail to one second, so the title
+  goes up with one second of film left (`compileTrace`'s `cardSeconds`).
 
 ## Commands
 
@@ -146,7 +148,18 @@ does not zoom in by itself.
 ## Speech: where a line is drawn
 
 `say` puts the line in a bubble over the speaker's head, anchored to the actor's
-body box from the last frame, so it follows the camera through a cut. The page
+body box from the last frame, so it follows the camera through a cut. Two rules
+keep a busy scene readable:
+
+- **a bubble stays up for at least one second** of the film's own clock. A line
+  said while an earlier one is still in its second does not cut it short; both
+  are on screen (the same speaker gets a second bubble rather than losing the
+  first), and a seek clears the page first and shows only the line at the
+  playhead.
+- **no two bubbles overlap.** Each one sits on its own head; when that place is
+  taken it moves, above or below or a column to the side, and the tail keeps
+  pointing at the speaker. The layout is pure (`src/bubble.ts`, `placeAll`), so
+  the rule is tested without a browser. The page
 keeps the older one-line caption under the picture behind a switch
 (`bubbles | caption`, remembered per browser): a dense run reads more calmly as
 one line than as a flicker of bubbles.
@@ -182,7 +195,7 @@ above are the whole vocabulary, and each is validated before it is used.
 | `drop` | `replaced` → `fedup`, `expired` → `eyes-sleepy`; `hops` → nothing, on the neuron that dropped it: a hop limit is the room's, not a character's reaction |
 | `error` / `unknown` | `eyes-furious` / `eyes-terrified` |
 | `note` with `what: "retry"` | `eyes-suspicious` |
-| the last moment | a `shot: wide`, then `end` with the show's title |
+| the last moment | a `shot: wide`, then `end` with the show's title, held for one second (the film's tail) |
 | anything else (`ground`, `finished`, an unknown type, an unknown field) | nothing |
 
 The camera moves at most once every two beats, so it follows the scene rather

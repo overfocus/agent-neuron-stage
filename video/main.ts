@@ -61,10 +61,15 @@ const BEATS: Beat[] = [
 ];
 
 const bubble = new Bubbles(layer, canvas);
+/** The film's clock, for the bubbles: `host` is not assigned yet when its own seek replays lines. */
+let now = 0;
 const host = new ShowHost(canvas, SEGMENTS[0]!.show, {
-  onLine(who, line) {
+  onLine(who, line, instant) {
     if (!line || !who) bubble.clear();
-    else bubble.say(who, line);
+    else {
+      if (instant) bubble.clear();
+      bubble.say(who, line, now);
+    }
   },
   onCard(title) {
     card.hidden = !title;
@@ -124,7 +129,9 @@ function renderFrame(t: number): void {
   }
 
   host.tick(DT);
-  if (bubble.speaker) bubble.place(host.headOf(bubble.speaker));
+  now = host.time;
+  bubble.tick(now);
+  bubble.place((id) => host.headOf(id));
   paintOverlays(t);
 }
 
