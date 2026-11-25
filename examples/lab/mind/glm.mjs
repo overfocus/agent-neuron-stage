@@ -216,6 +216,9 @@ function stepOf(voice) {
  * engine reads an empty stdout as `quiet`, and a quiet neuron forwards nothing,
  * so the branch of the conversation that dies here really does die.
  */
+/** Letters of any other script: a line has to be in the room's language. */
+const IN_LATIN = /^[\p{Script=Latin}\p{N}\p{P}\p{S}\p{Zs}]*$/u;
+
 export async function speak(who) {
   const voice = VOICES[who];
   if (!voice) throw new Error(`no voice for ${who}`);
@@ -225,7 +228,7 @@ export async function speak(who) {
   const grabbed = voice.grab.some((word) => heard.toLowerCase().includes(word));
   if (!grabbed && Math.random() > FLOOR) return null;
   const mood = pick(MOODS);
-  const system = `${voice.system}\n${SETTING}\nTonight: ${mood}\nReply with JSON only: {"say": "...", "pose": "..."} where pose is exactly one of: ${voice.poses.join(', ')}.`;
+  const system = `${voice.system}\n${SETTING}\nTonight: ${mood}\nWrite in English - the lab is in English, whatever the model's habits. Two sentences at most.\nReply with JSON only: {"say": "...", "pose": "..."} where pose is exactly one of: ${voice.poses.join(', ')}.`;
   const user = heard
     ? `Someone in the room just said: "${heard}"\nYou are ${who}. Say something.`
     : `The lab is quiet. Open your mouth as ${who}.`;
@@ -254,6 +257,8 @@ export async function speak(who) {
       if (!/429|too many concurrent/.test(last) || attempt === 3) break;
     }
     say = clean(asJson(content)?.say, who);
+    // a model that answers in another script is out of costume: ask again
+    if (say && !IN_LATIN.test(say)) say = '';
     if (say) break;
     // a 429, or a reply with no line in it: wait, and ask again
     if (attempt < 3) await new Promise((done) => setTimeout(done, 500 * attempt));

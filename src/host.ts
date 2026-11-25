@@ -21,9 +21,10 @@
 // and z outright). So `move` is a host tween over score time: the stage is told
 // a new place every frame, eased, and a seek lands the walk where the seek
 // points rather than at its end.
-import { Stage, kit, paint, type IdleHabit, type Manner, type Skin, type StageFraming } from 'maxcot';
+import { Stage, kit, paint, type IdleHabit, type Manner, type Scene, type Skin, type StageFraming } from 'maxcot';
 import { createConductor, type CommandContext, type Conductor, type ScheduledEvent } from 'maxcot/score';
 import { allSkins, skinsByName } from 'maxcot/skins';
+import { LABORATORY, foreground, roomOf, setRoom, skinNamed } from './labskin.ts';
 import { hasPose } from './fromtrace.ts';
 import type { Show } from './show.ts';
 
@@ -73,7 +74,7 @@ export class ShowHost {
     this.canvas = canvas;
     this.show = show;
     this.hooks = hooks;
-    this.baseSkin = skinsByName()[show.skin] ?? allSkins[0]!;
+    this.baseSkin = skinNamed(show.skin) ?? allSkins[0]!;
     this.skin = this.baseSkin;
     this.stage = new Stage(canvas, { skin: this.skin, palette: show.palette, autoplay: false });
     this.conductor = createConductor({
@@ -94,7 +95,7 @@ export class ShowHost {
   load(show: Show): void {
     this.conductor.pause();
     this.show = show;
-    this.baseSkin = skinsByName()[show.skin] ?? allSkins[0]!;
+    this.baseSkin = skinNamed(show.skin) ?? allSkins[0]!;
     this.skin = this.baseSkin;
     this.actorSkin = new Map(show.actors.filter((a) => a.style).map((a) => [a.id, a.style!]));
     this.conductor.songT = 0;
@@ -126,6 +127,12 @@ export class ShowHost {
     this.turnToLookedAt();
     this.stage.step(dt);
     if (this.actorSkin.size) this.paintMixed();
+    else {
+      // one look: the stage paints the ground itself, so the room gets the
+      // camera from the frame it last drew (it follows a cut a frame later)
+      const far = this.stage.members.slice().sort((a, b) => b.z - a.z)[0];
+      this.setRoomFrom(this.stage.S?.actors?.[0] ?? this.stage.S ?? undefined, far?.id);
+    }
     this.frameAt += dt;
     if (this.frameAt > 0.1) {
       this.frameAt = 0;
@@ -146,6 +153,14 @@ export class ShowHost {
   get total(): number {
     return this.conductor.total;
   }
+  /** Draw one character in its own skin (`null` puts it back in the show's). */
+  setLook(id: string, skin: string | null): void {
+    if (!this.stage.has(id)) return;
+    if (skin) this.actorSkin.set(id, skin);
+    else this.actorSkin.delete(id);
+    this.stage.dirty = true;
+  }
+
   /** Which actor is under a canvas point, for a click. */
   pick(x: number, y: number): string | null {
     return this.stage.pick(x, y);
@@ -220,6 +235,10 @@ export class ShowHost {
     const h = this.stage.canvas.height;
     const t = this.stage.time;
     // the ground is the show's own skin: the stage, one look; the cast, many
+    // the room is drawn in the same projection the cast was: one actor's camera
+    // plus its world x and z fixes the floor (see labskin.ts)
+    const ids = this.stage.members.slice().sort((a, b) => b.z - a.z).map((m) => m.id);
+    this.setRoomFrom(scenes[0], ids[0]);
     const g = this.skin.ground;
     const view = { w, h, t, palette: this.stage.palette, seed: Math.floor(t * (this.skin.fps || 12)), key: this.stage.key };
     ctx.save();
@@ -229,7 +248,6 @@ export class ShowHost {
       ctx.fillRect(0, 0, w, h);
     }
     ctx.restore();
-    const ids = this.stage.members.slice().sort((a, b) => b.z - a.z).map((m) => m.id);
     const skins = skinsByName();
     scenes.forEach((scene, i) => {
       const id = ids[i];
@@ -252,6 +270,15 @@ export class ShowHost {
       paint(sctx as never, scene, skin, { t, palette: this.stage.palette, key: `${this.stage.key}:${id ?? i}`, ground: false });
       ctx.drawImage(buf.canvas as never, box.x, box.y);
     });
+    // the near bench: the one thing in the room that is in front of the cast
+    if (this.skin.name === LABORATORY) foreground(ctx, w, h);
+  }
+
+  /** Tell the ground where the room is, from one actor's scene and its place. */
+  private setRoomFrom(scene: Scene | undefined, id: string | undefined): void {
+    if (!scene || !scene.cam || !id || !this.stage.has(id)) return;
+    const member = this.stage.member(id);
+    setRoom(roomOf(scene, { x: member.x, z: member.z }));
   }
 
   private actorId(event: ScheduledEvent): string {

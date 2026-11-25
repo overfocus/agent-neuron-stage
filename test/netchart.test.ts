@@ -27,8 +27,9 @@ describe('netOf', () => {
     const near = net.nodes.find((n) => n.id === 'ada')!; // z -1.2
     const far = net.nodes.find((n) => n.id === 'otto')!; // z 3.7
     expect(near.y).toBeGreaterThan(far.y);
-    expect(near.x).toBeLessThan(0.5); // left of the room
-    expect(far.x).toBeLessThan(0.5);
+    // across the room: ada stands left of bruno, in the chart as on the stage
+    expect(net.nodes.find((n) => n.id === 'ada')!.x).toBeLessThan(net.nodes.find((n) => n.id === 'bruno')!.x);
+    expect(Math.max(...net.nodes.map((n) => n.x)) - Math.min(...net.nodes.map((n) => n.x))).toBeGreaterThan(0.8);
   });
 
   it('draws every link, both ways round where the network has both', () => {

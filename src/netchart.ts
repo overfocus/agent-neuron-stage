@@ -13,7 +13,7 @@ export interface NetNode {
   /** The neuron's id. */
   id: string;
   kind: string;
-  /** 0..1 in the chart box: x across the floor, y up it (near is low on the page). */
+  /** The chart box: x 0..1 across the floor, y 0..aspect up it (`netOf`'s aspect; near is low). */
   x: number;
   y: number;
   /** The maxcot actor that plays it, when the show casts one. */
@@ -54,7 +54,9 @@ const PAD_Y_BOTTOM = 0.78;
  * trace: a trace records what happened, not which model a program called, so a
  * loaded file gets no badge rather than a guess.
  */
-export function netOf(trace: Trace, options: { via?: string } = {}): NetChart {
+export function netOf(trace: Trace, options: { via?: string; aspect?: number } = {}): NetChart {
+  // the box is one unit wide and `aspect` tall, so a tall pane gets a deep room
+  const tall = options.aspect && options.aspect > 0 ? options.aspect : 1;
   const actors = castOf(trace);
   const xs = actors.map((a) => a.x);
   const zs = actors.map((a) => a.z);
@@ -69,14 +71,14 @@ export function netOf(trace: Trace, options: { via?: string } = {}): NetChart {
       kind: actor.kind,
       x: round(PAD_X + tx * (1 - PAD_X * 2)),
       // depth is height on the page: the far end of the room is at the top
-      y: round(PAD_Y_BOTTOM - tz * (PAD_Y_BOTTOM - PAD_Y_TOP)),
+      y: round((PAD_Y_BOTTOM - tz * (PAD_Y_BOTTOM - PAD_Y_TOP)) * tall),
       who: actor.who,
       placed: n.at != null
     };
   });
   const edges: NetEdge[] = trace.links.map((l) => ({ from: l.from, to: l.to }));
   const minds = nodes.filter((n) => n.kind !== 'source').map((n) => n.id);
-  const mind = options.via && minds.length ? { label: options.via, x: 0.5, y: 0.93, to: minds } : undefined;
+  const mind = options.via && minds.length ? { label: options.via, x: 0.5, y: 0.93 * tall, to: minds } : undefined;
   return mind ? { nodes, edges, mind } : { nodes, edges };
 }
 

@@ -11,6 +11,7 @@ import { parseShow } from './fromscore.ts';
 import { formatScore, type Show } from './show.ts';
 import { ShowHost } from './host.ts';
 import { Bubbles } from './bubbles.ts';
+import { allSkins } from 'maxcot/skins';
 import { netOf } from './netchart.ts';
 import { eventType, parseTrace, payloadLine, type Trace } from './trace.ts';
 
@@ -50,6 +51,16 @@ type LineMode = 'bubbles' | 'caption';
 let lineMode: LineMode = localStorage.getItem('stage.lines') === 'caption' ? 'caption' : 'bubbles';
 lineSelect.value = lineMode;
 const bubbles = new Bubbles(bubblesLayer, canvas);
+/** The network pane's drawing and the run's transmissions, for the live pulse. */
+interface NetView {
+  nodes: Map<string, SVGGElement>;
+  edges: Array<{ el: SVGLineElement; from: string; to: string }>;
+  events: Array<{ film: number; what: string; from: string; to: string[] }>;
+  now: HTMLElement;
+  log: HTMLOListElement;
+}
+let netView: NetView | null = null;
+let logKey = '';
 const last = { who: '', text: '' };
 
 let host: ShowHost;
@@ -118,11 +129,12 @@ function paintCast(show: Show): void {
   const pane = $('pane-cast');
   pane.textContent = '';
   for (const actor of show.actors) {
-    const row = document.createElement('button');
-    row.type = 'button';
+    const row = document.createElement('div');
     row.className = 'cast-row' + (actor.id === selected ? ' on' : '');
     row.dataset.actor = actor.id;
-    row.innerHTML = '';
+    const pick = document.createElement('button');
+    pick.type = 'button';
+    pick.className = 'cast-pick';
     const name = document.createElement('span');
     name.className = 'cast-id';
     name.textContent = actor.id;
@@ -132,14 +144,35 @@ function paintCast(show: Show): void {
     const play = document.createElement('span');
     play.className = 'cast-who';
     play.textContent = `${actor.who} · ${actor.weight.toFixed(2)}`;
-    row.append(name, kind, play);
+    pick.append(name, kind, play);
     if (actor.note) {
       const note = document.createElement('span');
       note.className = 'cast-note';
       note.textContent = actor.note;
-      row.append(note);
+      pick.append(note);
     }
-    row.addEventListener('click', () => select(actor.id));
+    pick.addEventListener('click', () => select(actor.id));
+    // the look this character is drawn in; changing it changes the stage at once
+    const look = document.createElement('select');
+    look.className = 'cast-skin';
+    look.setAttribute('aria-label', `skin for ${actor.id}`);
+    const own = document.createElement('option');
+    own.value = '';
+    own.textContent = `show skin (${show.skin})`;
+    look.append(own);
+    for (const skin of allSkins) {
+      const option = document.createElement('option');
+      option.value = skin.name;
+      option.textContent = skin.name;
+      look.append(option);
+    }
+    look.value = actor.style ?? '';
+    look.addEventListener('change', () => {
+      const name = look.value || null;
+      actor.style = name ?? undefined;
+      host.setLook(actor.id, name);
+    });
+    row.append(pick, look);
     pane.append(row);
   }
 }
@@ -161,12 +194,18 @@ function paintNet(): void {
     pane.append(note);
     return;
   }
-  const chart = netOf(loaded.trace, { via: loaded.via });
+  const ASPECT = 1.35; // the room is taller than it is wide, to fill the pane
+  const chart = netOf(loaded.trace, { via: loaded.via, aspect: ASPECT });
   const NS = 'http://www.w3.org/2000/svg';
+  netView = null;
+  logKey = '';
   const W = 340;
-  const H = 300;
+  const H = Math.round(W * ASPECT);
   const pad = 10;
-  const at = (x: number, y: number) => ({ x: pad + x * (W - pad * 2), y: pad + y * (H - pad * 2) });
+  const at = (x: number, y: number) => ({
+    x: pad + x * (W - pad * 2),
+    y: pad + (y / ASPECT) * (H - pad * 2)
+  });
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.setAttribute('class', 'net-svg');
@@ -223,14 +262,19 @@ function paintNet(): void {
     svg.append(box);
   }
 
+  const edges: NetView['edges'] = [];
   for (const edge of chart.edges) {
     const from = place.get(edge.from);
     const to = place.get(edge.to);
     if (!from || !to) continue;
     const a = chart.nodes.find((n) => n.id === edge.from)!;
     const b = chart.nodes.find((n) => n.id === edge.to)!;
-    svg.append(line(from, to, radius(a.kind), radius(b.kind), 'net-edge', true));
+    const el = line(from, to, radius(a.kind), radius(b.kind), 'net-edge', true);
+    svg.append(el);
+    edges.push({ el, from: edge.from, to: edge.to });
   }
+
+  const nodes = new Map<string, SVGGElement>();
 
   for (const node of chart.nodes) {
     const p = place.get(node.id)!;
@@ -252,12 +296,87 @@ function paintNet(): void {
     dot.addEventListener('click', () => select(node.id));
     g.append(title, dot, label);
     svg.append(g);
+    nodes.set(node.id, g);
   }
 
   note.textContent = chart.mind
     ? `every neuron but the source talks to ${chart.mind.label}`
     : 'the trace does not say what a neuron’s mind runs — a model is not part of a trace';
-  pane.append(svg, note);
+  // When each thing the run did reaches the film: the compiler's lead-in, then
+  // the run's own milliseconds on one linear clock (fromtrace.ts).
+  const spb = 60 / loaded.show.bpm;
+  const lead = loaded.show.beatsPerBar * spb;
+  const events = loaded.trace.events.map((e) => ({
+    film: lead + e.t / 1000,
+    what: e.type,
+    from: e.from ?? e.neuron ?? '',
+    to: e.to
+  }));
+  const now = document.createElement('p');
+  now.className = 'net-now';
+  now.textContent = 'the room is quiet';
+  const log = document.createElement('ol');
+  log.className = 'net-log';
+  pane.append(now, svg, note, log);
+  netView = { nodes, edges, events, now, log };
+}
+
+/** The network, live: the line being spoken travels along its links. */
+function netLive(seconds: number): void {
+  if (!netView) return;
+  const held = 0.6; // seconds a transmission stays lit
+  const hotEdges = new Map<string, number>();
+  let now: { age: number; text: string } | null = null;
+  for (const event of netView.events) {
+    const age = seconds - event.film;
+    if (age < 0 || age > held) continue;
+    const strength = 1 - age / held;
+    for (const to of event.to) hotEdges.set(`${event.from}>${to}`, Math.max(hotEdges.get(`${event.from}>${to}`) ?? 0, strength));
+    if (!now || age < now.age) now = { age, text: eventText(event) };
+  }
+  for (const edge of netView.edges) {
+    const strength = hotEdges.get(`${edge.from}>${edge.to}`) ?? 0;
+    edge.el.classList.toggle('hot', strength > 0);
+    edge.el.style.opacity = strength > 0 ? String(0.55 + 0.45 * strength) : '';
+  }
+  const talking = new Set<string>();
+  for (const key of hotEdges.keys()) {
+    const [from, to] = key.split('>');
+    if (from) talking.add(from);
+    if (to) talking.add(to);
+  }
+  for (const [id, g] of netView.nodes) g.classList.toggle('hot', talking.has(id));
+  netView.now.textContent = now ? now.text : 'the room is quiet';
+  // and what the room has just been doing, newest first
+  const recent = netView.events
+    .map((event) => ({ event, age: seconds - event.film }))
+    .filter((row) => row.age >= 0 && row.age <= 2.5)
+    .sort((a, b) => a.age - b.age)
+    .slice(0, 7);
+  const key = recent.map((row) => row.event.film).join(',');
+  if (key !== logKey) {
+    logKey = key;
+    netView.log.textContent = '';
+    for (const { event } of recent) {
+      const row = document.createElement('li');
+      const at = document.createElement('span');
+      at.className = 'net-log-at';
+      at.textContent = `${event.film.toFixed(1)}s`;
+      const text = document.createElement('span');
+      text.textContent = eventText(event);
+      row.append(at, text);
+      netView.log.append(row);
+    }
+  }
+}
+
+/** One transmission, in a line a reader can follow. */
+function eventText(event: { what: string; from: string; to: string[] }): string {
+  const to = event.to[0];
+  if (event.what === 'answer') return to ? `${event.from} answers ${to}` : `${event.from} answers`;
+  if (event.what === 'signal') return to ? `${event.from} → ${to}` : `${event.from} speaks`;
+  if (event.what === 'quiet') return `${event.from} lets it go by`;
+  return `${event.from} ${event.what}`;
 }
 
 function paintEvents(): void {
@@ -412,7 +531,7 @@ const BUNDLED: Item[] = [
   { key: 'duet', group: 'a run, compiled', title: 'duet', note: 'two characters, a real run of examples/duet', json: duetTrace },
   { key: 'alerts', group: 'a run, compiled', title: 'alerts', note: 'a recording of the alert storm (agent-neuron)', json: alertsTrace },
   { key: 'troupe', group: 'a run, compiled', title: 'troupe', note: 'six characters, six neurons, six skins (examples/troupe)', json: troupeTrace, via: 'a table in mind/tell.mjs' },
-  { key: 'lab', group: 'a run, compiled', title: 'the lab', note: 'seven scientists, no taking turns, a model in each (examples/lab)', json: labTrace, skin: 'stencil', via: 'glm-5.3-flash:cloud, a cloud model' },
+  { key: 'lab', group: 'a run, compiled', title: 'the lab', note: 'seven scientists, no taking turns, a model in each (examples/lab)', json: labTrace, skin: 'laboratory', via: 'glm-5.3-flash:cloud, a cloud model' },
   { key: 'writer', group: "a network's answer", title: 'writer', note: 'a scene a network wrote (examples/writer)', text: writerScene },
   ...SCENES.map((scene) => ({
     key: `scene:${scene.key}`,
@@ -497,6 +616,7 @@ function loop(now: number): void {
   // a bubble holds its second on the film's clock, and each follows its own head
   bubbles.tick(host.time);
   bubbles.place((id) => host.headOf(id));
+  netLive(host.time);
   playButton.textContent = host.playing ? '❚❚' : '▶';
   playButton.setAttribute('aria-label', host.playing ? 'pause' : 'play');
   if (host.playing) scrub.value = String(host.time);

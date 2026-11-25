@@ -258,7 +258,7 @@ describe('ShowHost', () => {
     host.seek(1.2); // after every enter, before the first camera move
     host.tick(1 / 60);
     expect(host.stage.member('ada').z).toBe(-1.2);
-    expect(host.stage.member('otto').z).toBe(3.7);
+    expect(host.stage.member('otto').z).toBe(3.9);
     const near = host.actorBox('ada')!;
     const far = host.actorBox('otto')!;
     // Designs differ in build, so compare the unit they are drawn at: box

@@ -14,6 +14,15 @@ knows how to draw.
 
 ## Built on maxcot
 
+The room a show is set in is the stage's own: `src/labskin.ts` gives the
+laboratory (`skin: "laboratory"`) a floor, a back wall, a blackboard, shelves of
+glassware, a bench and a poster, and maxcot's pencil still draws every figure
+over it. The room is drawn in **the stage's own projection** - the floor line,
+the wall and the props are built from one actor's camera, so a character's feet
+are on the floor it stands on at the depth it stands at, and the room pans and
+scales with every shot the way the cast does. A ground cannot cover the actors,
+so the near bench is a plate the host lays over the finished frame.
+
 The characters, the skins, the poses and the film are
 **[maxcot](https://github.com/shibli21/maxcot)**, by
 [shibli21](https://github.com/shibli21): one rig, 26 visual skins, 8 actors, a
@@ -61,12 +70,17 @@ walk (`scenes/12-a-walk.score`; `n` and `p` step through them).
   one line under the picture for a dense run. The switch is remembered.
 - **cast**: every neuron as an actor, with the maxcot actor that plays it, its
   kind, its weight and its line of description. Click a row, or a character on
-  the stage.
+  the stage. Each row also picks that character's **skin** (any of maxcot's 26,
+  or the show's own): change it and the stage repaints that one person at once,
+  which is how a mixed cast is tried out before it is written into a program.
 - **net**: the run before it became a film — each neuron a dot where the network
   file put it, each link an arrow, and underneath, the mind every one of them
   talks to. For **the lab** that badge is the model (`glm-5.3-flash:cloud`); a
   trace does not record which model a program called, so a loaded file says so
-  instead of guessing.
+  instead of guessing. It is live: while the film plays, the line being spoken
+  runs along the links that carried it, the speakers light up, and a log under
+  the chart names the last few transmissions (`cue → ada`, `rosa answers bruno`)
+  at the second they reach the film.
 - **score**: the show as a maxcot score, which is the record of the
   compilation. It is what `node scripts/score.mjs <trace.json>` prints to
   stdout, and maxcot's own studio plays it.
