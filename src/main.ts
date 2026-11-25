@@ -3,6 +3,7 @@
 import duetTrace from './traces/duet.json';
 import alertsTrace from './traces/alerts.json';
 import writerScene from '../examples/writer/scene.score?raw';
+import { SCENES } from '../scenes/index.ts';
 import { compileTrace } from './fromtrace.ts';
 import { parseShow } from './fromscore.ts';
 import { formatScore, type Show } from './show.ts';
@@ -82,7 +83,8 @@ function load(next: Loaded): void {
 
 function paint(): void {
   const show = loaded.show;
-  meta.textContent = `${show.actors.length} actors · ${show.events.length} score events · ${show.bpm} bpm`;
+  const cast = `${show.actors.length} ${show.actors.length === 1 ? 'actor' : 'actors'}`;
+  meta.textContent = `${show.title} · ${cast} · ${show.events.length} score events · ${show.bpm} bpm`;
   scrub.max = String(host.total || 1);
   scrub.value = '0';
   paintCast(show);
@@ -262,32 +264,76 @@ window.addEventListener('resize', fit);
 new ResizeObserver(fit).observe(canvas.parentElement ?? document.body);
 
 // ── boot ──────────────────────────────────────────────────────────────────
-const BUNDLED = [
-  { key: 'duet', label: 'duet — two characters, a real run of examples/duet', json: duetTrace },
-  { key: 'writer', label: 'writer — a scene a network wrote (examples/writer)', text: writerScene },
-  { key: 'alerts', label: 'alerts — a recording of the alert storm (agent-neuron)', json: alertsTrace }
-];
-for (const item of BUNDLED) {
-  const option = document.createElement('option');
-  option.value = item.key;
-  option.textContent = item.label;
-  picker.append(option);
+interface Item {
+  key: string;
+  group: string;
+  title: string;
+  /** One line for the list; also the show's note in the score pane. */
+  note?: string;
+  text?: string;
+  json?: unknown;
 }
 
+const BUNDLED: Item[] = [
+  { key: 'duet', group: 'a run, compiled', title: 'duet', note: 'two characters, a real run of examples/duet', json: duetTrace },
+  { key: 'alerts', group: 'a run, compiled', title: 'alerts', note: 'a recording of the alert storm (agent-neuron)', json: alertsTrace },
+  { key: 'writer', group: "a network's answer", title: 'writer', note: 'a scene a network wrote (examples/writer)', text: writerScene },
+  ...SCENES.map((scene) => ({
+    key: `scene:${scene.key}`,
+    group: 'scenes, one file each',
+    title: scene.title,
+    note: scene.note,
+    text: scene.text
+  }))
+];
+{
+  const groups = new Map<string, HTMLOptGroupElement>();
+  for (const item of BUNDLED) {
+    let group = groups.get(item.group);
+    if (!group) {
+      group = document.createElement('optgroup');
+      group.label = item.group;
+      groups.set(item.group, group);
+      picker.append(group);
+    }
+    const option = document.createElement('option');
+    option.value = item.key;
+    option.textContent = `${item.title} — ${item.note ?? ''}`.replace(/ — $/, '');
+    group.append(option);
+  }
+}
+const itemOf = (key: string): Item => BUNDLED.find((b) => b.key === key) ?? BUNDLED[0]!;
+
 function loadBundled(key: string): void {
-  const item = BUNDLED.find((b) => b.key === key) ?? BUNDLED[0]!;
+  const item = itemOf(key);
   selected = '';
+  picker.value = item.key;
   if (item.text) {
-    // a score document: the writer network's own answer, kept as a file
-    const show = parseShow(item.text, { note: 'the answer of examples/writer, played as it is' });
-    load({ show, label: `${item.label}: ${show.events.length} score events` });
+    // a score document: a network's answer, or a scene written by hand
+    const show = parseShow(item.text, { title: item.title, note: item.note });
+    load({ show, label: `${item.title}: ${show.events.length} score events, played as it is` });
     return;
   }
   const trace = parseTrace(item.json);
-  load({ ...showOf(trace, item.label), label: `${item.label}: ${trace.events.length} events` });
+  load({ ...showOf(trace, `${item.title}: ${item.note ?? ''}`.replace(/: $/, '')), label: `${item.title}: ${trace.events.length} events` });
+}
+
+/** The next or previous show in the list, for reading the book straight through. */
+function step(delta: number): void {
+  const at = BUNDLED.findIndex((b) => b.key === picker.value);
+  const next = BUNDLED[(at + delta + BUNDLED.length) % BUNDLED.length]!;
+  loadBundled(next.key);
+  if (host) host.play();
 }
 
 picker.addEventListener('change', () => loadBundled(picker.value));
+window.addEventListener('keydown', (event) => {
+  if (event.metaKey || event.ctrlKey || event.altKey) return;
+  const target = event.target as HTMLElement | null;
+  if (target && (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.isContentEditable)) return;
+  if (event.key === 'n') step(1);
+  else if (event.key === 'p') step(-1);
+});
 
 const first = parseTrace(BUNDLED[0]!.json);
 host = new ShowHost(canvas, compileTrace(first, { title: first.demo }), {

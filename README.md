@@ -40,7 +40,9 @@ on a stage. The run behind it is real (`examples/duet/`, four engine
 processes), and its trace is committed at `src/traces/duet.json`. **writer** is
 a network's answer: one program that writes a scene and answers with it
 (`examples/writer/`). **alerts** is a recording shipped with agent-neuron: a
-network with six neurons and 261 events, compiled the same way.
+network with six neurons and 261 events, compiled the same way. Under them, the
+**scene book**: ten hand-written scores, one to eight characters each, from a
+graphite solo to a stencilled mob (`n` and `p` step through them).
 
 - **play / pause** (space), **scrub**, **½×** and **2×**: the film is the run
   on one clock, and the speed is yours.
@@ -89,12 +91,55 @@ debug build next to this repo. The trace committed here was written by
 `neuron-engine 0.0.0 58d184e2b1a6` from
 [agent-neuron](https://github.com/overfocus/agent-neuron) `main`.
 
+## The scene book
+
+Ten scenes, one file each in `scenes/`. A scene is nothing but a score: its cast,
+its blocking, its lines, its look and its card — the same file maxcot's studio
+plays. The page lists them under **scenes, one file each** (`n` and `p` step
+through the book while you read), and `test/scenes.test.ts` holds every file to
+the cast size it claims and to maxcot's own pose, skin and cast tables.
+
+| scene | cast | look | what happens |
+|---|---|---|---|
+| [one](scenes/01-one.score) | 1 | pencil | an old man counts the days until he runs out of numbers |
+| [duel](scenes/02-duel.score) | 2 | manga | two of them, a close-up per shout, and nothing was taken |
+| [eight](scenes/03-eight.score) | 8 | teletext | the whole cast, a beat each, roll call |
+| [noir](scenes/04-noir.score) | 2 | inkpunch | two and a letter, and it is his handwriting |
+| [party](scenes/05-party.score) | 4 | gigposter | four of them, three spot inks, everybody talking at once |
+| [six ways](scenes/06-six-ways.score) | 6 | six skins | the same six people drawn six ways, no line at all |
+| [argument](scenes/07-argument.score) | 3 | hologram, red | three in a beam, cutting on the beat |
+| [goodnight](scenes/08-goodnight.score) | 2 | sketch | two at the speed of someone falling asleep |
+| [unit](scenes/09-unit.score) | 5 | oscilloscope | five machines, heavy and still, one of them has a name |
+| [the wall](scenes/10-the-wall.score) | 7 | stencil | seven of them, one word, then quiet |
+
+<table>
+<tr>
+<td><img src="media/stills/party.jpg" alt="party: four characters, screen-printed"></td>
+<td><img src="media/stills/argument.jpg" alt="argument: three characters in a red hologram"></td>
+</tr>
+<tr>
+<td><img src="media/stills/the-wall.jpg" alt="the wall: seven stencilled characters, all furious"></td>
+<td><img src="media/stills/duel.jpg" alt="duel: two manga characters, one furious, one cowering"></td>
+</tr>
+<tr>
+<td><img src="media/stills/six-ways.jpg" alt="six ways: six characters in a rose hologram"></td>
+<td><img src="media/stills/one.jpg" alt="one: a solo in graphite with a letter"></td>
+</tr>
+</table>
+
+Every still is `media/stills/<scene>.jpg` (1920×1080), taken from the page by
+`video/stills.py` — the stage as a reader sees it, cropped to the canvas, with
+the bubble type scaled up for the capture. `media/social/<scene>.jpg` is the
+same frame at 1200×630 for a link preview or a post.
+
 ## The film
 
 `video/` renders the demo take for the portfolio page: a composition that steps
 the real host frame by frame (not a screen recording), so the stage's springs
 and camera eases are the app's and the take is repeatable. See
-`video/README.md`; the film itself lives with the page that plays it.
+`video/README.md`; the film itself lives with the page that plays it. The stills
+above come from the same Playwright: `video/stills.py` selects a scene, scrubs
+to a named bar and beat, and shoots the canvas.
 
 
 ## What is where
@@ -110,8 +155,11 @@ and camera eases are the app's and the take is repeatable. See
 | `src/show.ts` | what a show is, and how it writes itself back out as a score |
 | `src/host.ts` | the thin host: commands → a maxcot `Stage` and `Conductor` |
 | `src/main.ts` | the page: canvases, transport, panes, file input |
+| `scenes/` | the scene book: ten scores, and the list the page offers (`index.ts`) |
+| `media/` | the stills: `stills/` at 1920×1080, `social/` at 1200×630 |
 | `examples/duet/` | the two-character network, its minds, its inputs |
 | `examples/writer/` | one program that answers a whole scene, and the scene it answered |
+| `video/stills.py` | a still per scene, from the page, for the README and for posting |
 | `spikes/` | throwaway experiments with a verdict: facing, speech bubbles |
 | `vendor/maxcot/` | maxcot's library, unmodified, MIT (see `vendor/VENDORED.md`) |
 

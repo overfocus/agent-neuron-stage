@@ -1,0 +1,24 @@
+// one — a solo, in graphite. One character, one chair's worth of room, and a
+// camera that comes close only when the sentence needs it.
+{
+  title: "one",
+  bpm: 60,
+  beatsPerBar: 4,
+  tail: 3.4,
+  events: [
+    { at: [1, 1], enter: { id: "man", who: "oldman", x: 0, z: 0 } },
+    { at: [1, 1], style: "pencil" },
+    { at: [1, 3], shot: "full", on: "man" },
+    { at: [2, 1], pose: "thinking", on: "man" },
+    { at: [2, 3], say: "I have been counting the days.", on: "man" },
+    { at: [3, 1], shot: "close", on: "man" },
+    { at: [3, 2], pose: "eyes-down", on: "man" },
+    { at: [4, 1], pose: "letter", on: "man" },
+    { at: [4, 2], say: "And this morning I ran out of numbers.", on: "man" },
+    { at: [5, 1], shot: "medium", on: "man" },
+    { at: [5, 2], pose: "feel-sad", on: "man" },
+    { at: [6, 1], shot: "wide", on: "man" },
+    { at: [6, 3], pose: "at-ease", on: "man" },
+    { at: [7, 2], end: { text: "ONE" } },
+  ],
+}

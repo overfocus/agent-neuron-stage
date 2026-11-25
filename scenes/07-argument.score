@@ -1,0 +1,38 @@
+// argument — three of them, in a red beam. Two talk over each other, the third
+// says the sentence nobody wanted, and the camera cuts on the beat rather than
+// the line.
+{
+  title: "argument",
+  bpm: 110,
+  beatsPerBar: 4,
+  tail: 3.6,
+  events: [
+    { at: [1, 1], enter: { id: "prof", who: "professor", x: -1.3, z: 0.12 } },
+    { at: [1, 1], enter: { id: "teen", who: "teen", x: 0.2, z: 0 } },
+    { at: [1, 1], enter: { id: "boss", who: "boss", x: 1.5, z: 0.2 } },
+    { at: [1, 2], style: "hologram", palette: "red" },
+    { at: [1, 3], shot: "medium", on: "prof" },
+    { at: [2, 1], pose: "feel-angry", on: "prof" },
+    { at: [2, 1], say: "The number was in the report.", on: "prof" },
+    { at: [2, 2], shot: "medium", on: "teen" },
+    { at: [2, 2], pose: "dunno", on: "teen" },
+    { at: [2, 2], say: "Which report?", on: "teen" },
+    { at: [2, 3], pose: "feel-furious", on: "prof" },
+    { at: [3, 1], shot: "medium", on: "boss" },
+    { at: [3, 1], pose: "fedup", on: "boss" },
+    { at: [3, 2], say: "The one nobody read.", on: "boss" },
+    { at: [4, 1], shot: "wide" },
+    { at: [4, 1], pose: "feel-angry", on: "teen" },
+    { at: [4, 1], pose: "feel-angry", on: "boss" },
+    { at: [4, 2], pose: "stop", on: "prof" },
+    { at: [4, 3], say: "Then we read it now, all three of us.", on: "prof" },
+    { at: [5, 1], shot: "medium", on: "teen" },
+    { at: [5, 1], pose: "feel-sulking", on: "teen" },
+    { at: [6, 1], shot: "medium", on: "boss" },
+    { at: [6, 1], pose: "facepalm", on: "boss" },
+    { at: [7, 1], shot: "medium", on: "prof" },
+    { at: [7, 1], pose: "despair", on: "prof" },
+    { at: [7, 2], say: "Out loud. Together.", on: "prof" },
+    { at: [8, 2], end: { text: "THREE" } },
+  ],
+}

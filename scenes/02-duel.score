@@ -1,0 +1,32 @@
+// duel — two of them, in manga. Speed lines, screentone, a close-up per shout
+// and a wide only when both of them are in the frame at once.
+{
+  title: "duel",
+  bpm: 150,
+  beatsPerBar: 4,
+  tail: 2.4,
+  events: [
+    { at: [1, 1], enter: { id: "red", who: "boss", x: -1.65, z: 0.1 } },
+    { at: [1, 1], enter: { id: "blue", who: "clerk", x: 1.65, z: 0 } },
+    { at: [1, 2], style: "manga" },
+    { at: [1, 3], shot: "close", on: "red" },
+    { at: [1, 3], pose: "feel-angry", on: "red" },
+    { at: [2, 1], say: "You took the last one.", on: "red" },
+    { at: [2, 2], shot: "close", on: "blue" },
+    { at: [2, 2], pose: "feel-terrified", on: "blue" },
+    { at: [2, 3], say: "I took nothing!", on: "blue" },
+    { at: [3, 1], shot: "wide" },
+    { at: [3, 1], pose: "feel-furious", on: "red" },
+    { at: [3, 2], pose: "cower", on: "blue" },
+    { at: [4, 1], shot: "close", on: "blue" },
+    { at: [4, 1], pose: "feel-plotting", on: "blue" },
+    { at: [4, 2], say: "Then it was gone before I got here.", on: "blue" },
+    { at: [5, 1], shot: "wide" },
+    { at: [5, 1], pose: "deal", on: "red" },
+    { at: [5, 2], pose: "feel-sulking", on: "blue" },
+    { at: [6, 1], shot: "close", on: "red" },
+    { at: [6, 2], say: "Then we have the same problem.", on: "red" },
+    { at: [7, 1], shot: "wide" },
+    { at: [7, 3], end: { text: "DUEL" } },
+  ],
+}
