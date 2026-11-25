@@ -197,6 +197,7 @@ export class ShowHost {
         const target = text(value);
         if (!id || !this.stage.has(id)) return;
         if (target == null || target === 'none') this.stage.look(id, null);
+        else if (target === 'us') this.stage.look(id, 'us'); // out to the audience
         else if (this.stage.has(target)) this.stage.look(id, target);
         this.last = id;
         return;

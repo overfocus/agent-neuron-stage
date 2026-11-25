@@ -1,0 +1,18 @@
+{
+  "version": 0,
+  "name": "writer",
+  "description": "A casting call: one brief goes to a program, and the program answers with a scene - two characters who were not there before, what they say, how they look, the skin it is drawn in. Its answer is a maxcot score, so the stage plays it: a network wrote a film.",
+  "neurons": [
+    {
+      "id": "call",
+      "source": true,
+      "description": "The brief: who walks in, and what they carry. One JSON object, invented for the demo."
+    },
+    {
+      "id": "write",
+      "run": ["node", "write.mjs"],
+      "description": "Writes the scene from the brief and answers it as a score document (title, bpm, tail, events). No outgoing links, so the run's stdout is the score itself."
+    }
+  ],
+  "links": [{ "from": "call", "to": "write" }]
+}

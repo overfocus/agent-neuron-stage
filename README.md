@@ -20,9 +20,10 @@ npm run dev            # http://localhost:5210
 
 The page opens on **duet**: two characters, each a three-neuron mind, meeting
 on a stage. The run behind it is real (`examples/duet/`, four engine
-processes), and its trace is committed at `src/traces/duet.json`. **alerts**
-is a recording shipped with agent-neuron: a network with six neurons and 261
-events, compiled the same way.
+processes), and its trace is committed at `src/traces/duet.json`. **writer** is
+a network's answer: one program that writes a scene and answers with it
+(`examples/writer/`). **alerts** is a recording shipped with agent-neuron: a
+network with six neurons and 261 events, compiled the same way.
 
 - **play / pause** (space), **scrub**, **½×** and **2×**: the film is the run
   on one clock, and the speed is yours.
@@ -52,17 +53,18 @@ events, compiled the same way.
 `docs/DESIGN.md` is the longer version, including what maxcot does not have
 yet and what that costs. `docs/SCORE.md` is the command reference.
 
-## Make a trace
+## Make a trace, or a show
 
 ```sh
 sh scripts/run-duet.sh             # check + run examples/duet, write src/traces/duet.json
+sh scripts/writer-scene.sh         # check + run examples/writer, write examples/writer/scene.score
 node scripts/score.mjs src/traces/duet.json > duet.score
+node scripts/score.mjs - < a-score.json > a-score.score
 ```
 
-`scripts/run-duet.sh` wants a `neuron-engine` binary: `$NEURON_ENGINE`, or the
+Both `run-*` scripts want a `neuron-engine` binary: `$NEURON_ENGINE`, or the
 debug build next to this repo. The trace committed here was written by
-`neuron-engine 0.0.0 58d184e2b1a6` from
-[agent-neuron](../agent-neuron) `main`.
+`neuron-engine 0.0.0 58d184e2b1a6` from [agent-neuron](../agent-neuron) `main`.
 
 ## What is where
 
@@ -76,12 +78,13 @@ debug build next to this repo. The trace committed here was written by
 | `src/host.ts` | the thin host: commands → a maxcot `Stage` and `Conductor` |
 | `src/main.ts` | the page: canvases, transport, panes, file input |
 | `examples/duet/` | the two-character network, its minds, its inputs |
+| `examples/writer/` | one program that answers a whole scene, and the scene it answered |
 | `vendor/maxcot/` | maxcot's library, unmodified, MIT (see `vendor/VENDORED.md`) |
 
 ## Check
 
 ```sh
-npm run check          # tsc, vitest (44 tests), vite build
+npm run check          # tsc, vitest (47 tests), vite build
 ```
 
 The tests compile both committed traces, play a show through maxcot's real

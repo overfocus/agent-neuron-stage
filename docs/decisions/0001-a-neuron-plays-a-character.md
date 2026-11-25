@@ -53,7 +53,7 @@ authority on their half.
 - The library: tracing (`src/trace.ts`), casting (`src/cast.ts`), the compiler
   (`src/fromtrace.ts`), the score reader/writer (`src/show.ts`,
   `src/fromscore.ts`), and a thin host over maxcot's `Stage` and `Conductor`
-  (`src/host.ts`), with 44 tests including a real show played through maxcot's
+  (`src/host.ts`), with 47 tests including a real show played through maxcot's
   conductor in Node and scrubbed two ways to the same state.
 - The example: `examples/duet/` — one network, three characters, two of them
   composed networks with a three-neuron mind each (hear → feel → speak, speak a
@@ -62,8 +62,11 @@ authority on their half.
   answer each other because the engine forwards an answer along every outgoing
   link, and it stops because `maxHops` 3 refuses the ninth line.
 - The second door: the page plays any maxcot score, including a JSON score
-  document — the form a program neuron can answer with. (The example writer
-  network is not built; it needs no new code, per DESIGN §5.)
+  document — the form a program neuron can answer with. `examples/writer/` is
+  that door taken: one source into one program, whose answer is a scene with
+  two characters who were not there before. Its answer is kept as
+  `examples/writer/scene.score`, and a test re-runs the program from the same
+  brief and compares.
 - maxcot itself is vendored unmodified (MIT), because its workspace publishes
   nothing to npm yet; `vendor/VENDORED.md` pins the commit.
 
@@ -79,7 +82,7 @@ authority on their half.
 
 ## How it is checked
 
-`npm run check` (tsc, 44 vitest tests, vite build). The tests compile both
+`npm run check` (tsc, 47 vitest tests, vite build). The tests compile both
 committed traces, pin that every pose and every command the compiler emits is
 one the stage can draw, round-trip a show through maxcot's score parser, and
 play the duet end to end through maxcot's conductor. The run that made the

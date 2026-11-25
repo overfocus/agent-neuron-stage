@@ -2,6 +2,7 @@
 // is), watch it, scrub it, read what the compiler made of it.
 import duetTrace from './traces/duet.json';
 import alertsTrace from './traces/alerts.json';
+import writerScene from '../examples/writer/scene.score?raw';
 import { compileTrace } from './fromtrace.ts';
 import { parseShow } from './fromscore.ts';
 import { formatScore, type Show } from './show.ts';
@@ -226,6 +227,7 @@ new ResizeObserver(fit).observe(canvas.parentElement ?? document.body);
 // ── boot ──────────────────────────────────────────────────────────────────
 const BUNDLED = [
   { key: 'duet', label: 'duet — two characters, a real run of examples/duet', json: duetTrace },
+  { key: 'writer', label: 'writer — a scene a network wrote (examples/writer)', text: writerScene },
   { key: 'alerts', label: 'alerts — a recording of the alert storm (agent-neuron)', json: alertsTrace }
 ];
 for (const item of BUNDLED) {
@@ -237,8 +239,14 @@ for (const item of BUNDLED) {
 
 function loadBundled(key: string): void {
   const item = BUNDLED.find((b) => b.key === key) ?? BUNDLED[0]!;
-  const trace = parseTrace(item.json);
   selected = '';
+  if (item.text) {
+    // a score document: the writer network's own answer, kept as a file
+    const show = parseShow(item.text, { note: 'the answer of examples/writer, played as it is' });
+    load({ show, label: `${item.label}: ${show.events.length} score events` });
+    return;
+  }
+  const trace = parseTrace(item.json);
   load({ ...showOf(trace, item.label), label: `${item.label}: ${trace.events.length} events` });
 }
 

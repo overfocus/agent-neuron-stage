@@ -142,9 +142,9 @@ interactions. There are three levels, and the repo has the first two:
    document — which is exactly what a program neuron can answer with. A
    "writer" network (a source, a program, an exit) whose answer is
    `{ title, bpm, events: [{ at, enter: … }] }` therefore produces a show, and
-   the stage plays it without knowing a network was involved. (Built as a
-   door: `parseShow` + the file input. The example writer network is the next
-   thing to add, and needs no new code.)
+   the stage plays it without knowing a network was involved. (Built:
+   `examples/writer/` is one source into one program; its answer is kept as
+   `scene.score` and the page lists it as a third show.)
 3. **A network can write another network.** A program that emits a
    `.network.json` is already possible in agent-neuron (a program's answer is
    just JSON, and a `may.write` path lets it write a file); the studio can then
@@ -203,8 +203,8 @@ None of these blocks the idea. The first two are the ones I would ask for.
 2. **A character sheet?** A file that holds a character's name, its design, its
    mind and its lines (today: a folder holding a network and three programs).
    A sheet would be the thing a network writes to create a character.
-   Recommendation: build the writer network first; a sheet only if two
-   characters' folders feel repetitive.
+   Recommendation: the writer network is built (`examples/writer/`); a sheet
+   only if a character's folder stops being obvious.
 3. **Separate app, or a pane in agent-neuron-studio?** The studio already opens
    a trace and replays it as a table. A `stage` pane there would put the film
    where a person already is, at the cost of a second renderer inside a repo
