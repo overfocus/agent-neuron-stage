@@ -20,7 +20,7 @@ The characters, the skins, the poses and the film are
 film player and a bars-and-beats sequencer, drawn entirely in code — no images,
 no sprites, every line and halftone dot generated each frame. It is vendored
 here unmodified (MIT) because its workspace publishes nothing to npm yet, and
-every drawing on this stage is maxcot's.
+every drawing on this stage is maxcot's (see `NOTICE`).
 
 **A huge thank you to shibli21.** This project is a stage built out of that
 engine: the part that decides what happens is agent-neuron's, and everything

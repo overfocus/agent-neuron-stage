@@ -65,7 +65,7 @@ def main() -> int:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run(
             ["ffmpeg", "-y", "-framerate", str(args.fps), "-i", str(frames / "%05d.png"),
-             "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
+             "-vf", "scale=1600:-2", "-c:v", "libx264", "-preset", "slow", "-crf", "23", "-pix_fmt", "yuv420p",
              "-movflags", "+faststart", "-an", str(args.out)],
             check=True,
         )

@@ -72,6 +72,7 @@ const host = new ShowHost(canvas, SEGMENTS[0]!.show, {
   }
 });
 host.speed = SEGMENTS[0]!.speed;
+host.play(); // a frame is a tick: the conductor has to be running
 stamp.textContent = SEGMENTS[0]!.stamp;
 
 let segment = 0;
@@ -116,6 +117,7 @@ function renderFrame(t: number): void {
     host.speed = SEGMENTS[segment]!.speed;
     stamp.textContent = SEGMENTS[segment]!.stamp;
     host.seek(0);
+    host.play();
     bubble.clear();
     card.hidden = true;
     insetCode.textContent = '';

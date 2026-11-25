@@ -1,0 +1,13 @@
+agent-neuron-stage
+Copyright (c) 2026 Kevin Ferron, MIT (see LICENSE).
+
+This repository vendors maxcot unmodified:
+
+  vendor/maxcot/  https://github.com/shibli21/maxcot
+                  Copyright (c) 2026 shibli21, MIT
+
+maxcot's own license travels with its source at vendor/maxcot/LICENSE and is
+not modified. Every drawing on the stage — the rig, the skins, the poses, the
+film player, the score — is maxcot's; the compiler, the host and the page are
+this repository's. The demo film under video/ is a rendering of maxcot's
+drawing of this repository's shows.
