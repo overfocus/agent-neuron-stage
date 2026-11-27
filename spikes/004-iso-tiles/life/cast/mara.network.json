@@ -1,0 +1,248 @@
+{
+  "version": 0,
+  "name": "mara-inner",
+  "description": "The inner life of mara. Cheerful and greedy; longs for the stage. Forgives quickly.",
+  "neurons": [
+    {
+      "id": "senses",
+      "description": "What the stage tells this character: time passing, who is near, where it stands, and what was done to it.",
+      "source": true,
+      "at": [
+        -200,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "hunger",
+      "description": "Rises with time; eating brings it down. Feeds anger and lowers happiness.",
+      "serve": [
+        "node",
+        "../mind/drive.mjs",
+        "hunger",
+        "appetite=1.5"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        100,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "loneliness",
+      "description": "Rises while nobody is near; company and kindness bring it down.",
+      "serve": [
+        "node",
+        "../mind/drive.mjs",
+        "loneliness",
+        "need=0.9"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        62,
+        78,
+        0
+      ]
+    },
+    {
+      "id": "anger",
+      "description": "A hurt raises it, an empty stomach and a grudge feed it, saying it to their face lets it go.",
+      "serve": [
+        "node",
+        "../mind/drive.mjs",
+        "anger",
+        "temper=0.7"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        -22,
+        97,
+        0
+      ]
+    },
+    {
+      "id": "resentment",
+      "description": "A grudge per person, from every hurt; it fades slowly, and grows near them while angry. The memory.",
+      "serve": [
+        "node",
+        "../mind/drive.mjs",
+        "resentment",
+        "grudge=0.7",
+        "forgive=1.6"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        -90,
+        43,
+        0
+      ]
+    },
+    {
+      "id": "fear",
+      "description": "A fright raises it, the dark side of the room keeps it up; company calms it.",
+      "serve": [
+        "node",
+        "../mind/drive.mjs",
+        "fear",
+        "nerve=0.6"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        -90,
+        -43,
+        0
+      ]
+    },
+    {
+      "id": "happiness",
+      "description": "Drifts toward its cheer, pulled down by every other drive.",
+      "serve": [
+        "node",
+        "../mind/drive.mjs",
+        "happiness",
+        "cheer=0.85"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        -22,
+        -97,
+        0
+      ]
+    },
+    {
+      "id": "desire",
+      "description": "Longs for one place in the room; being there satisfies it.",
+      "serve": [
+        "node",
+        "../mind/drive.mjs",
+        "desire",
+        "longing=1.2",
+        "place=A"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        62,
+        -78,
+        0
+      ]
+    },
+    {
+      "id": "will",
+      "description": "Hears every drive and says what the character means to do, as a cue (say, pose) and an intent.",
+      "serve": [
+        "node",
+        "../mind/will.mjs",
+        "friend=oli"
+      ],
+      "maxHops": 6,
+      "timeout": 5000,
+      "at": [
+        200,
+        0,
+        0
+      ]
+    }
+  ],
+  "links": [
+    {
+      "from": "senses",
+      "to": "hunger"
+    },
+    {
+      "from": "senses",
+      "to": "loneliness"
+    },
+    {
+      "from": "senses",
+      "to": "anger"
+    },
+    {
+      "from": "senses",
+      "to": "resentment"
+    },
+    {
+      "from": "senses",
+      "to": "fear"
+    },
+    {
+      "from": "senses",
+      "to": "happiness"
+    },
+    {
+      "from": "senses",
+      "to": "desire"
+    },
+    {
+      "from": "hunger",
+      "to": "anger"
+    },
+    {
+      "from": "hunger",
+      "to": "happiness"
+    },
+    {
+      "from": "loneliness",
+      "to": "happiness"
+    },
+    {
+      "from": "fear",
+      "to": "happiness"
+    },
+    {
+      "from": "anger",
+      "to": "resentment"
+    },
+    {
+      "from": "anger",
+      "to": "happiness"
+    },
+    {
+      "from": "resentment",
+      "to": "anger"
+    },
+    {
+      "from": "resentment",
+      "to": "happiness"
+    },
+    {
+      "from": "desire",
+      "to": "happiness"
+    },
+    {
+      "from": "hunger",
+      "to": "will"
+    },
+    {
+      "from": "loneliness",
+      "to": "will"
+    },
+    {
+      "from": "anger",
+      "to": "will"
+    },
+    {
+      "from": "resentment",
+      "to": "will"
+    },
+    {
+      "from": "fear",
+      "to": "will"
+    },
+    {
+      "from": "happiness",
+      "to": "will"
+    },
+    {
+      "from": "desire",
+      "to": "will"
+    }
+  ]
+}

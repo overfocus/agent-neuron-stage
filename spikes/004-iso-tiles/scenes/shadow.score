@@ -1,0 +1,138 @@
+// the shadow — a walk through the seven stations of the Porch's piece on Jung's
+// shadow (kevinferron.com/porch/jung-shadow), in the room `SHADOW` (rooms.ts).
+//
+// Two bodies are the same robot: `self` in its own colours, `shadow` with every
+// material black. Three neighbours in the plaza are maxcot characters, drawn on
+// billboards, so one scene holds both kinds of character.
+//
+// What this score asks of the stage that maxcot's own score does not have (all
+// of it the spike's, see README.md):
+//   enter { tile: 'A' }       stand on a named place, or on [col, row]
+//   move { to: 'B' }          walk there by the room's own paths
+//   move { to: 'self' }       walk to stand beside someone
+//   style: 'robot', on: …     a model from the page's table, in place of a skin
+//   pose: 'Sitting'           a model's own clip by name; maxcot's names work too
+//
+// The lines are this scene's own, not quotations.
+{
+  title: "the shadow",
+  bpm: 84,
+  beatsPerBar: 4,
+  tail: 4,
+  events: [
+    // ── the plaza's three, there before anything happens ───────────────────
+    { at: [1, 1], enter: { id: "neighbour", who: "clerk", tile: [5, 19] } },
+    { at: [1, 1], style: "felttip", on: "neighbour" },
+    { at: [1, 1], enter: { id: "boss", who: "boss", tile: [10, 19] } },
+    { at: [1, 1], style: "riso", on: "boss" },
+    { at: [1, 1], enter: { id: "child", who: "child", tile: [7, 23] } },
+    { at: [1, 1], style: "ballpoint", on: "child" },
+
+    // ── A · the mask ─────────────────────────────────────────────────────
+    { at: [1, 1], enter: { id: "self", who: "max", tile: "A" } },
+    { at: [1, 1], style: "robot", on: "self" },
+    { at: [1, 1], shot: "medium", on: "self" },
+    { at: [1, 3], pose: "wave", on: "self" },
+    { at: [1, 3], say: "Good evening! I am exactly who you hoped I'd be.", on: "self" },
+    { at: [3, 2], pose: "bow", on: "self" },
+    { at: [3, 2], say: "Every night the same face. It fits so well I forget it's on.", on: "self" },
+
+    // ── B · what the light leaves out ────────────────────────────────────
+    { at: [5, 1], move: { to: "B" }, over: 8, on: "self" },
+    { at: [5, 1], shot: "full", on: "self" },
+    { at: [5, 3], enter: { id: "shadow", who: "max", tile: "A" } },
+    { at: [5, 3], style: "shadow", on: "shadow" },
+    { at: [5, 4], move: { to: "self" }, over: 8, on: "shadow" },
+    { at: [7, 2], pose: "eyes-suspicious", on: "self" },
+    { at: [7, 2], say: "The lamps are behind me. So what keeps pace with me?", on: "self" },
+
+    // ── C · seen in others ───────────────────────────────────────────────
+    { at: [8, 1], move: { to: "C" }, over: 12, on: "self" },
+    { at: [8, 3], move: { to: "neighbour" }, over: 12, on: "shadow" },
+    { at: [11, 1], shot: "wide", on: ["self", "neighbour", "boss", "child"] },
+    { at: [11, 2], look: "neighbour", on: "self" },
+    { at: [11, 2], pose: "point-you", on: "self" },
+    { at: [11, 2], say: "You. You're always so cold.", on: "self" },
+    { at: [12, 1], look: "self", on: "neighbour" },
+    { at: [12, 1], pose: "feel-surprised", on: "neighbour" },
+    { at: [12, 1], say: "Me? I only said good morning.", on: "neighbour" },
+    { at: [12, 4], look: "boss", on: "self" },
+    { at: [12, 4], pose: "fists", on: "self" },
+    { at: [12, 4], say: "And you want everything your own way.", on: "self" },
+    { at: [13, 3], look: "self", on: "boss" },
+    { at: [13, 3], pose: "eyes-smug", on: "boss" },
+    { at: [13, 3], say: "Funny. That sounds like someone I know.", on: "boss" },
+    { at: [14, 2], look: "self", on: "child" },
+    { at: [14, 2], pose: "feel-sad", on: "child" },
+    { at: [14, 2], say: "Why are you cross with all of us?", on: "child" },
+    { at: [15, 1], pose: "feel-sad", on: "self" },
+    { at: [15, 1], say: "I'm not cross.", on: "self" },
+    { at: [15, 4], look: "shadow", on: "child" },
+    { at: [15, 4], pose: "point", on: "child" },
+    { at: [15, 4], say: "Then who is that, standing behind him?", on: "child" },
+    { at: [16, 3], look: "shadow", on: "self" },
+    { at: [16, 3], pose: "recoil", on: "self" },
+
+    // ── D · the other side ───────────────────────────────────────────────
+    { at: [17, 1], move: { to: [20, 13] }, over: 8, on: "shadow" },
+    { at: [17, 3], move: { to: "D" }, over: 8, on: "self" },
+    { at: [17, 3], shot: "full", on: "self" },
+    { at: [17, 3], look: "self", on: "neighbour" },
+    { at: [17, 3], look: "self", on: "boss" },
+    { at: [17, 3], look: "self", on: "child" },
+    { at: [20, 1], shot: "wide", on: ["self", "shadow"] },
+    { at: [20, 1], look: "shadow", on: "self" },
+    { at: [20, 1], say: "There's another side to this river. I never go over.", on: "self" },
+    { at: [21, 1], look: "self", on: "shadow" },
+    { at: [21, 1], pose: "wave", on: "shadow" },
+
+    // ── E · meeting it ───────────────────────────────────────────────────
+    // the shadow goes round to the far end of the pass; the self comes in from the near one
+    { at: [21, 3], move: { to: [34, 5] }, over: 12, on: "shadow" },
+    { at: [22, 1], move: { to: [26, 5] }, over: 14, on: "self" },
+    { at: [22, 1], shot: "full", on: "self" },
+    { at: [24, 3], move: { to: [28, 5] }, over: 4, on: "shadow" },
+    { at: [25, 4], shot: "medium", on: ["self", "shadow"] },
+    { at: [26, 1], look: "shadow", on: "self" },
+    { at: [26, 1], look: "self", on: "shadow" },
+    { at: [26, 1], say: "You walked a long way to keep from meeting me.", on: "shadow" },
+    { at: [27, 1], pose: "No", on: "self" },
+    { at: [27, 1], say: "I don't know you.", on: "self" },
+    { at: [27, 4], pose: "Yes", on: "shadow" },
+    { at: [27, 4], say: "You know every lamp you lit to keep me out.", on: "shadow" },
+    { at: [29, 1], pose: "thinking", on: "self" },
+    { at: [29, 1], say: "... Then walk with me.", on: "self" },
+
+    // ── F · the blackening ───────────────────────────────────────────────
+    { at: [30, 1], move: { to: "F" }, over: 12, on: "self" },
+    { at: [30, 1], shot: "full", on: "self" },
+    { at: [30, 2], move: { to: "self" }, over: 12, on: "shadow" },
+    { at: [33, 2], shot: "medium", on: ["self", "shadow"] },
+    { at: [33, 2], pose: "feel-terrified", on: "self" },
+    { at: [33, 2], say: "It's all black down there.", on: "self" },
+    { at: [34, 2], pose: "collapse", on: "self" },
+    { at: [34, 3], look: "self", on: "shadow" },
+    { at: [36, 1], say: "Not an ending. The first stage.", on: "shadow" },
+    { at: [37, 1], pose: "Standing", on: "self" },
+    { at: [38, 1], look: "shadow", on: "self" },
+    { at: [38, 1], say: "I thought the dark would be empty.", on: "self" },
+    { at: [39, 1], say: "It was full of me.", on: "shadow" },
+
+    // ── G · whole, not perfect ───────────────────────────────────────────
+    { at: [40, 1], move: { to: "G" }, over: 10, on: "self" },
+    { at: [40, 1], shot: "full", on: "self" },
+    { at: [40, 2], move: { to: "self" }, over: 10, on: "shadow" },
+    { at: [43, 1], shot: "medium", on: ["self", "shadow"] },
+    { at: [43, 3], look: "shadow", on: "self" },
+    { at: [43, 3], say: "You'll stay?", on: "self" },
+    { at: [44, 3], look: "self", on: "shadow" },
+    { at: [44, 3], say: "I always have. Now you can see me.", on: "shadow" },
+    { at: [46, 1], say: "Not perfect, then.", on: "self" },
+    { at: [47, 1], pose: "thumbsup", on: "shadow" },
+    { at: [47, 1], say: "Whole.", on: "shadow" },
+    { at: [48, 1], pose: "Dance", on: "self" },
+    { at: [48, 1], pose: "Dance", on: "shadow" },
+    { at: [49, 1], shot: "wide" },
+    { at: [50, 1], end: { card: "logo", text: "WHOLE, NOT PERFECT" } }
+  ]
+}
